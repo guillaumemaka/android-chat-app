@@ -1,4 +1,4 @@
-package com.espacepiins.messsenger;
+package com.espacepiins.messenger;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

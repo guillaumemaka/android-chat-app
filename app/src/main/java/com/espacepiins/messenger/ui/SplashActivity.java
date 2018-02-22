@@ -1,4 +1,4 @@
-package com.espacepiins.messsenger.ui;
+package com.espacepiins.messenger.ui;
 
 import android.app.Activity;
 import android.os.Bundle;
