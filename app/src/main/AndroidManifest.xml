@@ -15,22 +15,20 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyC0nAtKza2k3w8pQErhicyIOKlrdecjEYs"/>
 
         <activity
             android:theme="@android:style/Theme.Material.Light.NoActionBar.Fullscreen"
             android:name="com.espacepiins.messenger.ui.SplashActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
         </activity>
-
-
         <activity
-            android:name="com.espacepiins.messenger.ui.AuthActivity">
+            android:name="com.espacepiins.messenger.ui.RoomActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
+
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>

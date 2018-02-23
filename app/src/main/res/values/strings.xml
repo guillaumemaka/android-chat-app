@@ -3,8 +3,8 @@
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in</string>
+    <string name="prompt_password">Password (optional)</string>
+    <string name="action_sign_in">Sign in or register</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="error_invalid_email">This email address is invalid</string>
     <string name="error_invalid_password">This password is too short</string>
@@ -26,4 +26,8 @@
     <string name="sign_up">SIGN UP</string>
     <string name="password_no_match_message">Lee mots de passe ne correspondent pas</string>
     <string name="term_of_user_ck">Conditions d\'utilisation</string>
+    <string name="room_activity_title">Conversations</string>
+    <string name="tablayout_tab_recent_title">Récent</string>
+    <string name="tablayout_tab_discover_title">Découvrir</string>
+    <string name="action_search">Chercher une conversation</string>
 </resources>
