@@ -5,21 +5,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0dd2cb"
+    android:background="#f5ca5d"
     tools:context="com.espacepiins.messenger.ui.SplashActivity">
 
     <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="219dp"
-        android:layout_height="208dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:id="@+id/myView"
+        android:layout_width="271dp"
+        android:layout_height="175dp"
         android:src="@drawable/ic_piins_logo"
-        android:tint="#fff"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="57dp"
+        tools:layout_editor_absoluteY="207dp" />
 </android.support.constraint.ConstraintLayout>

@@ -24,6 +24,12 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <activity
+            android:theme="@android:style/Theme.Material.Light.NoActionBar.TranslucentDecor"
+            android:name="com.espacepiins.messenger.ui.AuthActivity">
+
+    </activity>
     </application>
 
 </manifest>
