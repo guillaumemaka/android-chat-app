@@ -6,14 +6,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#f5ca5d"
-    tools:context="com.espacepiins.messenger.ui.SplashActivity">
+    tools:context="com.espacepiins.messenger.ui.SplashActivity"
+    android:layout_gravity="center"
+
+
+
+
+    >
 
     <ImageView
         android:id="@+id/myView"
-        android:layout_width="271dp"
-        android:layout_height="175dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+
         android:src="@drawable/ic_piins_logo"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="57dp"
-        tools:layout_editor_absoluteY="207dp" />
+        tools:ignore="MissingConstraints" />
 </android.support.constraint.ConstraintLayout>

@@ -15,6 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+
         <activity
             android:theme="@android:style/Theme.Material.Light.NoActionBar.Fullscreen"
             android:name="com.espacepiins.messenger.ui.SplashActivity">
@@ -25,11 +26,14 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:theme="@android:style/Theme.Material.Light.NoActionBar.TranslucentDecor"
-            android:name="com.espacepiins.messenger.ui.AuthActivity">
 
-    </activity>
+        <activity
+            android:name="com.espacepiins.messenger.ui.AuthActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
