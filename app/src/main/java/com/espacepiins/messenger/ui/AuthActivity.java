@@ -1,15 +1,13 @@
 package com.espacepiins.messenger.ui;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 
+import com.espacepiins.messenger.ui.callback.OnNavigationChange;
 import com.espacepiins.messsenger.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -17,20 +15,12 @@ import com.google.firebase.auth.FirebaseUser;
 /**
  * A login screen that offers login via email/password.
  */
-public class AuthActivity extends FragmentActivity
+public class AuthActivity extends FragmentActivity implements OnNavigationChange, LoginFragment.OnSigninListener, RegisterFragment.OnRegistrationListener
 {
-    /**
-     * Id to identity READ_CONTACTS permission request.
-     */
-    private static final int REQUEST_READ_CONTACTS = 0;
+    public enum AuthPage {
+        SIGNIN, SIGNUP
+    }
 
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
     private static final String TAG = null ;
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
@@ -84,8 +74,32 @@ public class AuthActivity extends FragmentActivity
         }
     }
 
-    public void changelayout(View view) {
-        setContentView(R.layout.register_fragment_layout);
+    @Override
+    public void navigateTo(AuthPage page) {
+        switch (page) {
+            case SIGNIN:
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.auth_container, new LoginFragment())
+                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                        .commit();
+                break;
+            case SIGNUP:
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.auth_container, new RegisterFragment())
+                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                        .commit();
+                break;
+        }
+    }
+
+    @Override
+    public void onSigninSuccess(FirebaseUser user) {
+
+    }
+
+    @Override
+    public void onRegisterSuccess(FirebaseUser user) {
+
     }
 }
 

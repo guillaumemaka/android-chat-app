@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#f5ca5d"
+    android:background="@color/colorPrimary"
     android:gravity="center_horizontal"
     android:orientation="vertical"
     android:paddingBottom="@dimen/activity_vertical_margin"
@@ -12,7 +12,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.espacepiins.messenger.ui.AuthActivity">
 
-    <!-- Login progress -->
     <ProgressBar
         android:id="@+id/login_progress"
         style="?android:attr/progressBarStyleLarge"
@@ -20,13 +19,6 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:visibility="gone" />
-
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="126dp"
-        android:layout_marginTop="25dp"
-        app:srcCompat="@drawable/ic_piins_logo"
-        tools:ignore="VectorDrawableCompat" />
 
     <ScrollView
         android:id="@+id/login_form"
@@ -39,6 +31,13 @@
             android:layout_height="wrap_content"
             android:gravity="bottom"
             android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:layout_marginTop="25dp"
+                android:src="@drawable/ic_piins_logo"
+                android:layout_gravity="center_horizontal"/>
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
@@ -65,9 +64,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/prompt_password"
-                    android:inputType="textEmailAddress"
+                    android:inputType="textPassword"
                     android:maxLines="1"
-                    android:singleLine="true" />
+                    android:singleLine="true"/>
 
             </android.support.design.widget.TextInputLayout>
 
@@ -92,7 +91,7 @@
 
 
             <Button
-                android:id="@+id/RegisterPage"
+                android:id="@+id/signupBtn"
                 style="?android:textAppearanceSmall"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -100,7 +99,7 @@
                 android:onClick="changelayout"
                 android:paddingVertical="20dp"
                 android:text="Sign Up"
-                android:textStyle="bold" />
+                android:textStyle="bold"/>
 
             <RelativeLayout
                 android:layout_width="match_parent"

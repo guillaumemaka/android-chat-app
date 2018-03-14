@@ -1,11 +1,12 @@
 package com.espacepiins.messenger.ui;
 
 
-import android.content.Intent;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.espacepiins.messenger.ui.callback.OnNavigationChange;
 import com.espacepiins.messsenger.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -20,14 +22,16 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import android.os.*;
-
 /**
  * A simple {@link Fragment} subclass.
  */
 
 
 public class LoginFragment extends Fragment implements View.OnClickListener {
+
+    interface OnSigninListener {
+        void onSigninSuccess(FirebaseUser user);
+    }
 
     /**
      * Id to identity READ_CONTACTS permission request.
@@ -49,7 +53,10 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
     private FirebaseAuth mAuth;
     private EditText emailField;
     private EditText passwordField;
-
+    private Button signUp;
+    private Button buttonLog;
+    private OnNavigationChange mOnNavigationChange;
+    private OnSigninListener mOnSigninListener;
 
     public LoginFragment() {
         // Required empty public constructor
@@ -61,30 +68,79 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
         View view = inflater.inflate(R.layout.login_fragment_layout, container, false);
 
 
-        Button buttonlog = (Button) view.findViewById(R.id.register);
-        emailField = (EditText) view.findViewById(R.id.emailField);
-        passwordField = (EditText) view.findViewById(R.id.passwordField);
+        buttonLog = view.findViewById(R.id.Logbtn);
+        emailField =  view.findViewById(R.id.emailField);
+        passwordField = view.findViewById(R.id.passwordField);
+        signUp = view.findViewById(R.id.signupBtn);
 
-
-
-        buttonlog.setOnClickListener(this);
-
+        buttonLog.setOnClickListener(this);
+        signUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mOnNavigationChange.navigateTo(AuthActivity.AuthPage.SIGNUP);
+            }
+        });
         return view;
-
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        if(context instanceof OnSigninListener){
+            mOnSigninListener = (OnSigninListener) context;
+        }else {
+            throw new RuntimeException("The host activity must implement OnRegistrationListener");
+        }
+
+        if(context instanceof OnNavigationChange){
+            mOnNavigationChange = (OnNavigationChange) context;
+        }else {
+            throw new RuntimeException("The host activity must implement OnNavigationChange");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mOnNavigationChange = null;
+        mOnSigninListener = null;
+    }
 
     @Override
     public void onClick(View v) {
 
         //register
-        String email = emailField.getText().toString();
-        String password = passwordField.getText().toString();
-        Login(email, password);
+        final String email = emailField.getText().toString().trim();
+
+        if(email.isEmpty()){
+            emailField.setError(getString(R.string.email_require_message));
+            return;
+        }
+
+        if(Patterns.EMAIL_ADDRESS.matcher(email).matches()){
+            emailField.setError(getString(R.string.invalid_email_message));
+            return;
+        }
+
+        final String password = passwordField.getText().toString();
+
+        if(password.isEmpty()){
+            passwordField.setError(getString(R.string.password_require_message));
+            return;
+        }
+
+        if(password.length() < 8){
+            passwordField.setError(getString(R.string.password_too_short_message));
+            return;
+        }
+
+        login(email, password);
     }
 
 
-    public void Login(String email, String password) {
+    public void login(String email, String password) {
+
 
         mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
             @Override
@@ -95,6 +151,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
                     // Yes, vous êtes connecter
                     Log.d(TAG, "signInWithEmail:success");
                     FirebaseUser user = mAuth.getCurrentUser();
+                    mOnSigninListener.onSigninSuccess(user);
                     Toast.makeText(getActivity(), "Connected !",
                             Toast.LENGTH_SHORT).show();
                 } else {

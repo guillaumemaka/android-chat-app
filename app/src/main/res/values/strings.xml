@@ -4,7 +4,7 @@
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in">Sign in</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="error_invalid_email">This email address is invalid</string>
     <string name="error_invalid_password">This password is too short</string>
@@ -16,4 +16,14 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="invalid_email_message">L\'adresse email saisie n\'est pas valide!</string>
+    <string name="email_require_message">Le champ adresse email est requis</string>
+    <string name="pseudo_require_message">Le champ pseudo est requis</string>
+    <string name="pseudo_too_short_message">Le champ pseudo est trop court</string>
+    <string name="password_require_message">Le champ mot de passe est requis</string>
+    <string name="password_too_short_message">Le champ mot de passe est trop court</string>
+    <string name="confirm_password_prompt">Confirm password</string>
+    <string name="sign_up">SIGN UP</string>
+    <string name="password_no_match_message">Lee mots de passe ne correspondent pas</string>
+    <string name="term_of_user_ck">Conditions d\'utilisation</string>
 </resources>
