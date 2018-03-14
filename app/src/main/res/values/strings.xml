@@ -30,4 +30,8 @@
     <string name="tablayout_tab_recent_title">Récent</string>
     <string name="tablayout_tab_discover_title">Découvrir</string>
     <string name="action_search">Chercher une conversation</string>
+    <string name="search_hint">Chercher un contact</string>
+    <string name="preference_key">com.espacepiins.messenger.global_preferences</string>
+    <string name="read_contacts_permission_rational_message_hint">Nous devons accéder à vos contacts, pour vous permettre d\'utiliser pleinement l\'application.</string>
+    <string name="action_search_contact">Chercher un contact</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.espacepiins.messenger.models;
+package com.espacepiins.messenger.model;
 
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;

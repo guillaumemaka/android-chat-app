@@ -13,7 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.espacepiins.messenger.models.Room;
+import com.espacepiins.messenger.model.Room;
 import com.espacepiins.messsenger.R;
 
 import java.util.ArrayList;
@@ -32,13 +32,19 @@ import butterknife.ButterKnife;
  * create an instance of this fragment.
  */
 public class RoomListFragment extends Fragment {
+    interface OnRoomInteractionListener {
+        void onRoomSelected(Room room);
+    }
+
     private final String TAG = RoomListFragment.class.getName();
 
     @BindView(R.id.recyclerView)
     RecyclerView mRecyclerView;
+
     private RoomsAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     private List<Room> mRoomsDataSet = new ArrayList<>();
+    private OnRoomInteractionListener mListener;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -71,6 +77,12 @@ public class RoomListFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        if (context instanceof OnRoomInteractionListener) {
+            mListener = (OnRoomInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnRoomInteractionListener");
+        }
         Log.d(TAG, "onAttach()");
     }
 
@@ -100,6 +112,9 @@ public class RoomListFragment extends Fragment {
         private List<Room> mRooms;
 
         public class ViewHolder extends RecyclerView.ViewHolder {
+            @BindView(R.id.room_row)
+            View row;
+
             @BindView(R.id.room_row_displayName)
             TextView displayName;
 
@@ -136,9 +151,15 @@ public class RoomListFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-            Room room = mRooms.get(position);
+            final Room room = mRooms.get(position);
             holder.displayName.setText(room.getFromDisplayName());
             holder.lastMessage.setText(room.getLastMessage());
+            holder.row.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mListener.onRoomSelected(room);
+                }
+            });
         }
 
         @Override

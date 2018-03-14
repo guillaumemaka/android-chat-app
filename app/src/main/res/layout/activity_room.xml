@@ -2,7 +2,6 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent" android:orientation="vertical">
 
@@ -10,12 +9,11 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimaryDark"
+        android:background="@color/colorSecondary"
         android:elevation="4dp"
         android:minHeight="?attr/actionBarSize"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        app:title="Conversations"
         >
 
         <LinearLayout
@@ -36,17 +34,6 @@
                 android:elevation="0dp"
                 app:srcCompat="@drawable/avatar_overlay_extra_small"/>
 
-            <TextView
-                android:id="@+id/activityTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="5dp"
-                android:fontFamily="sans-serif"
-                android:text="@string/room_activity_title"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                />
         </LinearLayout>
     </android.support.v7.widget.Toolbar>
 
@@ -58,12 +45,13 @@
             android:id="@+id/pager"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?attr/colorPrimaryDark">
+            android:background="@color/colorSecondary">
 
             <android.support.design.widget.TabLayout
-                android:id="@+id/tabbar"
+                android:id="@+id/tablayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:tabIndicatorColor="@color/colorPrimary"
                 app:tabMode="scrollable">
 
                 <android.support.design.widget.TabItem
@@ -85,11 +73,12 @@
             android:layout_marginBottom="20dp"
             android:layout_marginEnd="20dp"
             android:clickable="true"
+            android:focusable="true"
             android:tint="#fff"
             app:backgroundTint="#0DD2CB"
             app:layout_anchor="@id/pager"
             app:layout_anchorGravity="bottom|right"
-            app:srcCompat="@drawable/ic_add" android:focusable="true"/>
+            app:srcCompat="@drawable/ic_chat_bubbles"/>
 
     </android.support.design.widget.CoordinatorLayout>
 

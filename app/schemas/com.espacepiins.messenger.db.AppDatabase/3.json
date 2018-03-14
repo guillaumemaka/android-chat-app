@@ -1,0 +1,94 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "f5fe87bc77dcb22cab56880ddc9682ca",
+    "entities": [
+      {
+        "tableName": "contacts",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `lookup_key` TEXT, `display_name` TEXT, `firebase_uid` TEXT, `email_address` TEXT, `phone_number` TEXT, `photo_thumbnail_uri` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lookupKey",
+            "columnName": "lookup_key",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "displayName",
+            "columnName": "display_name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "firebaseUID",
+            "columnName": "firebase_uid",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "emailAddress",
+            "columnName": "email_address",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "phoneNumber",
+            "columnName": "phone_number",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "photoThumbnailUri",
+            "columnName": "photo_thumbnail_uri",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [
+          {
+            "name": "index_contacts_display_name",
+            "unique": false,
+            "columnNames": [
+              "display_name"
+            ],
+            "createSql": "CREATE  INDEX `index_contacts_display_name` ON `${TABLE_NAME}` (`display_name`)"
+          },
+          {
+            "name": "index_contacts_email_address",
+            "unique": false,
+            "columnNames": [
+              "email_address"
+            ],
+            "createSql": "CREATE  INDEX `index_contacts_email_address` ON `${TABLE_NAME}` (`email_address`)"
+          },
+          {
+            "name": "index_contacts_phone_number",
+            "unique": false,
+            "columnNames": [
+              "phone_number"
+            ],
+            "createSql": "CREATE  INDEX `index_contacts_phone_number` ON `${TABLE_NAME}` (`phone_number`)"
+          }
+        ],
+        "foreignKeys": []
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"f5fe87bc77dcb22cab56880ddc9682ca\")"
+    ]
+  }
+}

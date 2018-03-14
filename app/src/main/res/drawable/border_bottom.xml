@@ -2,7 +2,7 @@
     <item>
         <shape android:shape="rectangle"
                android:width="?attr/actionBarSize"
-               android:color="@color/colorPrimaryDark">
+               android:color="@color/colorSecondary">
 
         </shape>
     </item>
