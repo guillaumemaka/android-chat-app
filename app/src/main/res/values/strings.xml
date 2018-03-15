@@ -38,4 +38,6 @@
     <string name="tos_error_message">Veuillez accepter les conditions d\'utilisation.</string>
     <string name="registration_failed_message">La création du compte à echouée.</string>
     <string name="login_failed_message">L\'authentification à échouée.</string>
+
+
 </resources>

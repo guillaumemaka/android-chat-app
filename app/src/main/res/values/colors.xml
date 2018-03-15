@@ -3,6 +3,10 @@
     <color name="colorPrimary">#f5ca5d</color>
     <color name="colorSecondary">#F5F5F5</color>
     <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorAccent">#ff4081</color>
+    <color name="colorAro">#6EB025</color>
+    <color name="colorPhone">#4A90E2</color>
+    <color name="colorSetting">#BD10E0</color>
+    <color name="colorContact">#D0021B</color>
     <color name="white">#fff</color>
 </resources>
