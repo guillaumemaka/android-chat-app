@@ -10,8 +10,8 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 
+import com.espacepiins.messenger.R;
 import com.espacepiins.messenger.model.Contact;
-import com.espacepiins.messsenger.R;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

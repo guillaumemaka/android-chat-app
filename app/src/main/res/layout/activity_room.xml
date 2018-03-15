@@ -75,7 +75,7 @@
             android:clickable="true"
             android:focusable="true"
             android:tint="#fff"
-            app:backgroundTint="#0DD2CB"
+            app:backgroundTint="@color/colorPrimary"
             app:layout_anchor="@id/pager"
             app:layout_anchorGravity="bottom|right"
             app:srcCompat="@drawable/ic_chat_bubbles"/>

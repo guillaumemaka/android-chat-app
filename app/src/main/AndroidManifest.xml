@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.espacepiins.messsenger">
+          package="com.espacepiins.messenger">
 
     <!-- To auto-complete the email text field in the login form with the user's emails -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
@@ -15,6 +15,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyC0nAtKza2k3w8pQErhicyIOKlrdecjEYs"/>
@@ -22,17 +23,16 @@
         <activity
             android:name="com.espacepiins.messenger.ui.SplashActivity"
             android:theme="@android:style/Theme.Material.Light.NoActionBar.Fullscreen">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
         </activity>
 
         <activity android:name="com.espacepiins.messenger.ui.RoomActivity">
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable"/>
-
-             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-             </intent-filter>
         </activity>
         <activity
             android:name="com.espacepiins.messenger.ui.ContactSearchResultsActivity"
@@ -41,15 +41,14 @@
                 <action android:name="android.intent.action.SEARCH"/>
             </intent-filter>
         </activity>
+
         <activity android:name="com.espacepiins.messenger.ui.ContactActivity"
             android:parentActivityName="com.espacepiins.messenger.ui.RoomActivity">
-            <!--<intent-filter>-->
 
-                <!--<action android:name="android.intent.action.MAIN"/>-->
+        </activity>
 
-                <!--<category android:name="android.intent.category.LAUNCHER"/>-->
+        <activity android:name=".ui.AuthActivity">
 
-            <!--</intent-filter>-->
         </activity>
 
         <service

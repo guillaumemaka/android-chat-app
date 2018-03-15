@@ -24,10 +24,10 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.espacepiins.messenger.R;
 import com.espacepiins.messenger.model.Contact;
 import com.espacepiins.messenger.model.Room;
 import com.espacepiins.messenger.service.ContactImportService;
-import com.espacepiins.messsenger.R;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;

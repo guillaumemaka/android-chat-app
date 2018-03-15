@@ -3,8 +3,8 @@
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password (optional)</string>
-    <string name="action_sign_in">Sign in or register</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="error_invalid_email">This email address is invalid</string>
     <string name="error_invalid_password">This password is too short</string>
@@ -34,4 +34,8 @@
     <string name="preference_key">com.espacepiins.messenger.global_preferences</string>
     <string name="read_contacts_permission_rational_message_hint">Nous devons accéder à vos contacts, pour vous permettre d\'utiliser pleinement l\'application.</string>
     <string name="action_search_contact">Chercher un contact</string>
+    <string name="email_already_taken">Cette adresse email existe déjà.</string>
+    <string name="tos_error_message">Veuillez accepter les conditions d\'utilisation.</string>
+    <string name="registration_failed_message">La création du compte à echouée.</string>
+    <string name="login_failed_message">L\'authentification à échouée.</string>
 </resources>

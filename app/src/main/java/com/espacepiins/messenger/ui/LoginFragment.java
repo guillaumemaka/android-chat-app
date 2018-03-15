@@ -4,6 +4,7 @@ package com.espacepiins.messenger.ui;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.util.Patterns;
@@ -12,10 +13,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.espacepiins.messenger.ui.callback.OnNavigationChange;
-import com.espacepiins.messsenger.R;
+import com.espacepiins.messenger.ui.callback.OnAuthFragmentReplaceListener;
+import com.espacepiins.messenger.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -45,17 +47,18 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
     private static final String[] DUMMY_CREDENTIALS = new String[]{
             "foo@example.com:hello", "bar@example.com:world"
     };
-    private static final String TAG = null;
+    private static final String TAG = LoginFragment.class.getName();
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
 
-    private FirebaseAuth mAuth;
     private EditText emailField;
     private EditText passwordField;
     private Button signUp;
     private Button buttonLog;
-    private OnNavigationChange mOnNavigationChange;
+    private ProgressBar mLoginProgress;
+
+    private OnAuthFragmentReplaceListener mOnAuthFragmentReplaceListener;
     private OnSigninListener mOnSigninListener;
 
     public LoginFragment() {
@@ -72,12 +75,13 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
         emailField =  view.findViewById(R.id.emailField);
         passwordField = view.findViewById(R.id.passwordField);
         signUp = view.findViewById(R.id.signupBtn);
+        mLoginProgress = view.findViewById(R.id.login_progress);
 
         buttonLog.setOnClickListener(this);
         signUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mOnNavigationChange.navigateTo(AuthActivity.AuthPage.SIGNUP);
+                mOnAuthFragmentReplaceListener.onReplaceFragment(AuthActivity.AuthFragment.SIGNUP_FRAGMENT);
             }
         });
         return view;
@@ -87,78 +91,89 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
     public void onAttach(Context context) {
         super.onAttach(context);
 
+        // The fragment require the host activity to implement
+        // the OnRegistrationListener
         if(context instanceof OnSigninListener){
             mOnSigninListener = (OnSigninListener) context;
         }else {
             throw new RuntimeException("The host activity must implement OnRegistrationListener");
         }
 
-        if(context instanceof OnNavigationChange){
-            mOnNavigationChange = (OnNavigationChange) context;
+        // The fragment require the host activity to implement
+        // the OnAuthFragmentReplaceListener to handle navigation between
+        // login/register view
+        if(context instanceof OnAuthFragmentReplaceListener){
+            mOnAuthFragmentReplaceListener = (OnAuthFragmentReplaceListener) context;
         }else {
-            throw new RuntimeException("The host activity must implement OnNavigationChange");
+            throw new RuntimeException("The host activity must implement OnAuthFragmentReplaceListener");
         }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mOnNavigationChange = null;
+        mOnAuthFragmentReplaceListener = null;
         mOnSigninListener = null;
     }
 
     @Override
     public void onClick(View v) {
-
+        boolean valid = true;
         //register
         final String email = emailField.getText().toString().trim();
 
+        // Email is required
         if(email.isEmpty()){
             emailField.setError(getString(R.string.email_require_message));
-            return;
+            valid = false;
         }
 
-        if(Patterns.EMAIL_ADDRESS.matcher(email).matches()){
+        // Email must be a valid email address
+        if(!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
             emailField.setError(getString(R.string.invalid_email_message));
-            return;
+            valid = false;
         }
 
         final String password = passwordField.getText().toString();
 
+        // Password is required
         if(password.isEmpty()){
             passwordField.setError(getString(R.string.password_require_message));
-            return;
+            valid = false;
         }
 
-        if(password.length() < 8){
-            passwordField.setError(getString(R.string.password_too_short_message));
-            return;
+        if(valid){
+            login(email, password);
         }
-
-        login(email, password);
     }
 
-
+    /**
+     * Logged in a user
+     * @param email the user email address
+     * @param password the user password
+     */
     public void login(String email, String password) {
-
-
-        mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
+        mLoginProgress.setVisibility(View.VISIBLE);
+        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
-
-
+                mLoginProgress.setVisibility(View.GONE);
                 if (task.isSuccessful()) {
-                    // Yes, vous êtes connecter
+                    // User successfully logged in
                     Log.d(TAG, "signInWithEmail:success");
-                    FirebaseUser user = mAuth.getCurrentUser();
+                    FirebaseUser user = task.getResult().getUser();
                     mOnSigninListener.onSigninSuccess(user);
                     Toast.makeText(getActivity(), "Connected !",
                             Toast.LENGTH_SHORT).show();
                 } else {
-                    // Nope
+                    // Something went wrong
                     Log.w(TAG, "signInWithEmail:failure", task.getException());
-                    Toast.makeText(getActivity(), "Authentication failed.",
-                            Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(getActivity(), getString(R.string.login_failed_message) + task.getException().getLocalizedMessage(),
+//                            Toast.LENGTH_SHORT).show();
+                    Snackbar.make(LoginFragment.this.getView(),
+                            getString(R.string.login_failed_message) + task.getException().getLocalizedMessage(),
+                            Snackbar.LENGTH_LONG).show();
                 }
             }
         });

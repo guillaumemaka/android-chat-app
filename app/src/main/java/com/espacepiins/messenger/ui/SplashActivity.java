@@ -3,11 +3,10 @@ package com.espacepiins.messenger.ui;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 
-import com.espacepiins.messsenger.R;
-
-import static java.lang.Thread.sleep;
+import com.espacepiins.messenger.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class SplashActivity extends Activity {
 
@@ -22,8 +21,17 @@ public class SplashActivity extends Activity {
             public void run() {
                 try {
                     sleep(2000);
-                    Intent intent = new Intent(getApplicationContext(), AuthActivity.class);
-                    startActivity(intent);
+
+                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+                    if(user == null){
+                        Intent intent = new Intent(SplashActivity.this, AuthActivity.class);
+                        startActivity(intent);
+                    }else{
+                        Intent intent = new Intent(SplashActivity.this, RoomActivity.class);
+                        startActivity(intent);
+                    }
+
                     finish();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
