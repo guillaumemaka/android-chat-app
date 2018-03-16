@@ -8,8 +8,8 @@ android {
         applicationId "com.espacepiins.messenger"
         minSdkVersion 21
         targetSdkVersion 26
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.0.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         generatedDensities = []
@@ -35,8 +35,16 @@ android {
     }
 
     buildTypes {
-        release {
+        debug {
+            debuggable true
             minifyEnabled false
+            buildConfigField 'boolean', 'ENABLE_CRASHLYTICS', 'false'
+        }
+
+        release {
+            debuggable false
+            minifyEnabled false
+            buildConfigField 'boolean', 'ENABLE_CRASHLYTICS', 'true'
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
