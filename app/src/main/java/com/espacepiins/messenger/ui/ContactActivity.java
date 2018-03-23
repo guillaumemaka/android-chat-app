@@ -10,8 +10,8 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 
-import com.espacepiins.messenger.model.Contact;
-import com.espacepiins.messsenger.R;
+import com.espacepiins.messenger.R;
+import com.espacepiins.messenger.model.SearchContactResult;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -57,7 +57,7 @@ public class ContactActivity extends AppCompatActivity implements ContactListFra
     }
 
     @Override
-    public void onListFragmentInteraction(Contact item) {
+    public void onListFragmentInteraction(SearchContactResult item) {
         Log.d(TAG, "onListFragmentInteraction() " + item.getDisplayName());
         Intent resultIntent = new Intent();
         int action = CONTACT_SELECTED;
@@ -66,7 +66,7 @@ public class ContactActivity extends AppCompatActivity implements ContactListFra
             action = INVITE_CONTACT;
         }
 
-        resultIntent.putExtra("contact", item);
+        resultIntent.putExtra("emailAddress", item.getEmailAddresses().get(0).getEmailAddress());
 
         resultIntent.putExtra("action", action);
         setResult(Activity.RESULT_OK, resultIntent);

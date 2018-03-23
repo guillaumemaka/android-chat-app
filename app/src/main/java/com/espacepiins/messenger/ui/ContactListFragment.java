@@ -18,8 +18,8 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.espacepiins.messenger.db.AppDatabase;
-import com.espacepiins.messenger.model.Contact;
-import com.espacepiins.messsenger.R;
+import com.espacepiins.messenger.R;
+import com.espacepiins.messenger.model.SearchContactResult;
 
 import java.util.List;
 
@@ -153,16 +153,16 @@ public class ContactListFragment extends Fragment {
     /**
      * Task responsible of searching a contact
      */
-    public class SearchContactAsyncTask extends AsyncTask<String, Void, List<? extends Contact>> {
+    public class SearchContactAsyncTask extends AsyncTask<String, Void, List<SearchContactResult>> {
         @Override
-        protected List<? extends Contact> doInBackground(String... terms) {
+        protected List<SearchContactResult> doInBackground(String... terms) {
 
             if(terms.length == 0){
-                return mAppDatabase.contactDao().getAll();
+                return mAppDatabase.contactDao().search("");
             }
 
             if(terms[0].isEmpty()){
-                return mAppDatabase.contactDao().getAll();
+                return mAppDatabase.contactDao().search("");
             }
 
             Log.d(SearchContactAsyncTask.class.getName(), "Search term: " + terms[0]);
@@ -177,7 +177,7 @@ public class ContactListFragment extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(List<? extends Contact> contacts) {
+        protected void onPostExecute(List<SearchContactResult> contacts) {
             super.onPostExecute(contacts);
 
             Log.d(SearchContactAsyncTask.class.getName(), "Contacts length: " + contacts.size());
@@ -200,6 +200,6 @@ public class ContactListFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(Contact item);
+        void onListFragmentInteraction(SearchContactResult item);
     }
 }

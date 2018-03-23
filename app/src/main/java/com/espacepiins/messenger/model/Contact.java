@@ -25,14 +25,6 @@ public interface Contact extends Parcelable {
 
     void setFirebaseUID(String firbaseUID);
 
-    String getEmailAddress();
-
-    void setEmailAddress(String emailAddress);
-
-    String getPhoneNumber();
-
-    void setPhoneNumber(String phoneNumber);
-
     String getPhotoThumbnailUri();
 
     void setPhotoThumbnailUri(String uri);

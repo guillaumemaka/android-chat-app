@@ -2,7 +2,7 @@ package com.espacepiins.messenger.ui;
 
 import android.support.annotation.NonNull;
 
-import com.espacepiins.messenger.model.Contact;
+import com.espacepiins.messenger.model.SearchContactResult;
 
 import java.util.List;
 
@@ -11,5 +11,5 @@ import java.util.List;
  */
 
 public interface ContactAdapterContract {
-    void setContacts(@NonNull List<? extends Contact> contacts);
+    void setContacts(@NonNull List<SearchContactResult> contacts);
 }

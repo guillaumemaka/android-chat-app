@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 import com.espacepiins.messenger.model.Contact;
+import com.espacepiins.messenger.model.SearchContactResult;
 import com.espacepiins.messenger.ui.ContactListFragment.OnListFragmentInteractionListener;
 import com.espacepiins.messsenger.R;
 
@@ -29,14 +30,14 @@ import butterknife.ButterKnife;
  */
 public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactViewHolder> implements ContactAdapterContract {
     @Nullable
-    private List<? extends Contact> mContacts;
+    private List<SearchContactResult> mContacts;
     @Nullable
     private OnListFragmentInteractionListener mListener;
 
     public ContactAdapter() {
     }
 
-    public ContactAdapter(@Nullable final List<? extends Contact> items, @Nullable final OnListFragmentInteractionListener listener) {
+    public ContactAdapter(@Nullable final List<SearchContactResult> items, @Nullable final OnListFragmentInteractionListener listener) {
         mContacts = items;
         mListener = listener;
     }
@@ -70,7 +71,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
     }
 
     @Override
-    public void setContacts(final List<? extends Contact> contacts) {
+    public void setContacts(final List<SearchContactResult> contacts) {
         Log.d(ContactAdapter.class.getName(), "Contacts size: " + contacts.size());
         mContacts = contacts;
         notifyDataSetChanged();
@@ -93,7 +94,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
         ImageView mInAppStatus;
 
         @NonNull
-        public Contact mContact;
+        public SearchContactResult mContact;
 
 
         public ContactViewHolder(View view) {
@@ -101,15 +102,15 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
             ButterKnife.bind(this, view);
         }
 
-        public void setContact(@NonNull final Contact contact) {
+        public void setContact(@NonNull final SearchContactResult contact) {
             mContact = contact;
             mDisplayNameTextView.setText(contact.getDisplayName());
 
-            if(mContact.getEmailAddress() != null){
-                mInfoTextView.setText(contact.getEmailAddress());
+            if(mContact.getEmailAddresses() != null && mContact.getEmailAddresses().size() > 0){
+                mInfoTextView.setText(contact.getEmailAddresses().get(0).getEmailAddress());
             } else{
-                if(mContact.getPhoneNumber() != null){
-                    mInfoTextView.setText(mContact.getPhoneNumber());
+                if(mContact.getPhoneNumbers() != null && mContact.getPhoneNumbers().size() > 0){
+                    mInfoTextView.setText(mContact.getPhoneNumbers().get(0).getPhoneNumber());
                 }
             }
 
