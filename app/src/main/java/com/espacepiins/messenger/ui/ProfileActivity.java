@@ -1,71 +1,98 @@
 package com.espacepiins.messenger.ui;
 
+import android.arch.lifecycle.ViewModelProviders;
+import android.databinding.BindingMethod;
+import android.databinding.BindingMethods;
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MotionEvent;
+import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
 
-import com.espacepiins.messenger.R;
+import com.espacepiins.messenger.application.GlideApp;
+import com.espacepiins.messenger.model.Profile;
+import com.espacepiins.messenger.ui.viewmodel.ProfileViewModel;
+import com.espacepiins.messsenger.R;
+import com.espacepiins.messsenger.databinding.ActivityProfileBinding;
 
-import java.util.ArrayList;
-import java.util.List;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * Created by Wilfrield on 2018-03-06.
  */
-
+@BindingMethods({
+        @BindingMethod(type = android.support.design.widget.FloatingActionButton.class,
+                attribute = "app:srcCompat",
+                method = "setImageDrawable"),
+        @BindingMethod(type = android.support.design.widget.FloatingActionButton.class,
+                attribute = "app:backgroundTint",
+                method = "setBackgroundTintList")})
 public class ProfileActivity extends AppCompatActivity {
-    private MyAdapter adapter;
+    @BindView(R.id.toolbar)
+    Toolbar mToolbar;
+    @BindView(R.id.avatarImageView)
+    ImageView mAvatarImageView;
+    private ActivityProfileBinding mActivityProfileBinding;
+    private ProfileViewModel mProfileViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profile);
-        RecyclerView rv = findViewById(R.id.my_list);
-        adapter = new MyAdapter(this, getItems());
-        rv.setAdapter(adapter);
-        GridLayoutManager lm =
-                new GridLayoutManager(this, 1);
-        rv.setLayoutManager(lm);
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this,
-                lm.getOrientation());
-        rv.addItemDecoration(dividerItemDecoration);
 
-        rv.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
-            @Override
-            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
-                return false;
-            }
+        mActivityProfileBinding = DataBindingUtil.setContentView(this, R.layout.activity_profile);
 
-            @Override
-            public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+        ButterKnife.bind(this, mActivityProfileBinding.getRoot());
+        mProfileViewModel = ViewModelProviders.of(this).get(ProfileViewModel.class);
 
-            }
+        mProfileViewModel.getProfileData().observe(this, this::updateUI);
 
-            @Override
-            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+        mActivityProfileBinding.setIsEditing(false);
 
-            }
-        });
+        setSupportActionBar(mToolbar);
+        ActionBar actionBar = getSupportActionBar();
+
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setTitle("Profile");
     }
 
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        // inflater le menu ici
-        return true;
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
-    private List<Item> getItems() {
-        List<Item> items = new ArrayList<>();
-        items.add(new Item("Georges Simmons", R.drawable.ic_face, R.color.colorContact));
-        items.add(new Item("@georges_simmons", R.drawable.ic_at, R.color.colorAro));
-        items.add(new Item("+7 (974) 849-0782", R.drawable.ic_phone_buttons, R.color.colorPhone));
-        items.add(new Item("Preferences", R.drawable.ic_settings, R.color.colorSetting));
-        return items;
+    @OnClick(R.id.editButton)
+    public void onEditClicked(View view) {
+        mActivityProfileBinding.setIsEditing(!mActivityProfileBinding.getIsEditing());
+        mActivityProfileBinding.editTextDisplayname.requestFocus();
+//        FloatingActionButton actionButton = (FloatingActionButton) view;
+        if (!mActivityProfileBinding.getIsEditing()) {
+//            actionButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorContact)));
+            mProfileViewModel.save(mActivityProfileBinding.getProfile());
+        } else {
+//            actionButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorEditingMode)));
+        }
+    }
+
+    private void updateUI(final Profile profile) {
+        mActivityProfileBinding.setProfile(profile);
+        GlideApp.with(this)
+                .load(profile.getAvatarUrl())
+                .fallback(R.drawable.ic_face)
+                .centerCrop()
+                .circleCrop()
+                .into(mAvatarImageView);
 
     }
 }

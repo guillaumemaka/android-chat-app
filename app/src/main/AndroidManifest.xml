@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.espacepiins.messsenger">
 
-    <!-- To auto-complete the email text field in the login form with the user's emails -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
     <uses-permission android:name="android.permission.READ_PROFILE"/>
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
@@ -23,24 +22,13 @@
         <activity
             android:name="com.espacepiins.messenger.ui.SplashActivity"
             android:theme="@android:style/Theme.Material.Light.NoActionBar.Fullscreen">
-            android:theme="@android:style/Theme.Material.Light.NoActionBar.Fullscreen"
-            android:name="com.espacepiins.messenger.ui.SplashActivity">
-            <!--<intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>-->
-        </activity>
-
-        <activity android:name="com.espacepiins.messenger.ui.ProfileActivity">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
 
         <activity android:name="com.espacepiins.messenger.ui.RoomActivity">
             <meta-data
@@ -55,14 +43,20 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name="com.espacepiins.messenger.ui.ProfileActivity"
+            android:parentActivityName="com.espacepiins.messenger.ui.RoomActivity"/>
+
         <activity android:name="com.espacepiins.messenger.ui.ContactActivity"
-            android:parentActivityName="com.espacepiins.messenger.ui.RoomActivity">
+                  android:parentActivityName="com.espacepiins.messenger.ui.RoomActivity"/>
 
-        </activity>
+        <activity android:name="com.espacepiins.messenger.ui.AuthActivity"/>
 
-        <activity android:name=".ui.AuthActivity">
-
-        </activity>
+        <!--uCrop -->
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
 
         <service
             android:name="com.espacepiins.messenger.service.ContactImportService"

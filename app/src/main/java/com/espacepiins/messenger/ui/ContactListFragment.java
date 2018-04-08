@@ -19,7 +19,7 @@ import android.widget.ProgressBar;
 
 import com.espacepiins.messenger.db.AppDatabase;
 import com.espacepiins.messenger.model.Contact;
-import com.espacepiins.messenger.R;
+import com.espacepiins.messsenger.R;
 
 import java.util.List;
 
