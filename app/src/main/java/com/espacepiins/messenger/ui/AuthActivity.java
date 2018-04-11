@@ -6,8 +6,8 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 
-import com.espacepiins.messenger.R;
 import com.espacepiins.messenger.ui.callback.OnAuthFragmentReplaceListener;
+import com.espacepiins.messsenger.R;
 import com.google.firebase.auth.FirebaseUser;
 
 /**

@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/PiinsMessenger.iml" filepath="$PROJECT_DIR$/PiinsMessenger.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/piins-messenger.iml" filepath="$PROJECT_DIR$/piins-messenger.iml" />
     </modules>
   </component>
 </project>

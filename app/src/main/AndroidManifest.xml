@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.espacepiins.messenger">
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.espacepiins.messsenger">
 
-    <!-- To auto-complete the email text field in the login form with the user's emails -->
+    <uses-feature
+        android:name="android.hardware.camera2"
+        android:required="false"/>
+
     <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
     <uses-permission android:name="android.permission.READ_PROFILE"/>
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
         android:name="com.espacepiins.messenger.application.MessengerApplicationContext"
@@ -25,9 +32,11 @@
             android:theme="@android:style/Theme.Material.Light.NoActionBar.Fullscreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
+
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
 
         <activity android:name="com.espacepiins.messenger.ui.RoomActivity">
             <meta-data
@@ -42,19 +51,36 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name="com.espacepiins.messenger.ui.ProfileActivity"
+            android:parentActivityName="com.espacepiins.messenger.ui.RoomActivity"/>
+
         <activity android:name="com.espacepiins.messenger.ui.ContactActivity"
-            android:parentActivityName="com.espacepiins.messenger.ui.RoomActivity">
+                  android:parentActivityName="com.espacepiins.messenger.ui.RoomActivity"/>
 
-        </activity>
+        <activity android:name="com.espacepiins.messenger.ui.AuthActivity"/>
 
-        <activity android:name=".ui.AuthActivity">
-
-        </activity>
+        <!--uCrop -->
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
 
         <service
             android:name="com.espacepiins.messenger.service.ContactImportService"
             android:exported="false">
         </service>
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="${applicationId}.com.vansuita.pickimage.provider"
+            android:exported="false"
+            android:grantUriPermissions="true"
+            tools:replace="android:authorities">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/picker_provider_paths"/>
+        </provider>
     </application>
 
 </manifest>

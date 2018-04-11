@@ -15,7 +15,7 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 import com.espacepiins.messenger.model.Contact;
 import com.espacepiins.messenger.ui.ContactListFragment.OnListFragmentInteractionListener;
-import com.espacepiins.messenger.R;
+import com.espacepiins.messsenger.R;
 
 import java.util.List;
 

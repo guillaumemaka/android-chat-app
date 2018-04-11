@@ -17,7 +17,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.espacepiins.messenger.ui.callback.OnAuthFragmentReplaceListener;
-import com.espacepiins.messenger.R;
+import com.espacepiins.messsenger.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;

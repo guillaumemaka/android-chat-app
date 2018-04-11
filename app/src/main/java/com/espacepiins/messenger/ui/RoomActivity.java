@@ -24,10 +24,10 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
-import com.espacepiins.messenger.R;
 import com.espacepiins.messenger.model.Contact;
 import com.espacepiins.messenger.model.Room;
 import com.espacepiins.messenger.service.ContactImportService;
+import com.espacepiins.messsenger.R;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -144,6 +144,8 @@ public class RoomActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @OnClick(R.id.profife_avatar_button)
     public void onProfileAvatarImageButtonClick(View imageButton){
+        Intent intent = new Intent(this, ProfileActivity.class);
+        startActivity(intent);
         Log.d(TAG, "onProfileAvatarImageButtonClick clicked!");
     }
 
@@ -163,11 +165,8 @@ public class RoomActivity extends AppCompatActivity implements OnMapReadyCallbac
             return true;
         }
 
-        if(checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED){
-            return true;
-        }
+        return checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
 
-        return false;
     }
 
     private void requestContactPermission() {

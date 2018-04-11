@@ -13,8 +13,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.espacepiins.messenger.R;
 import com.espacepiins.messenger.model.Room;
+import com.espacepiins.messsenger.R;
 
 import java.util.ArrayList;
 import java.util.List;
