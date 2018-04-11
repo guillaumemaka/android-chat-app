@@ -59,6 +59,7 @@ public class Profile extends BaseObservable {
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
+        notifyPropertyChanged(BR.avatarUrl);
     }
 
     @Exclude

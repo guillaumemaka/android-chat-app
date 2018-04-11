@@ -3,6 +3,7 @@ package com.espacepiins.messenger.ui.viewmodel;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.MutableLiveData;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -14,11 +15,14 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 public final class ProfileViewModel extends AndroidViewModel implements ValueEventListener {
     private final String TAG = ProfileViewModel.class.getName();
     private MutableLiveData<Profile> profileData;
     private DatabaseReference mDatabaseReference;
+    private StorageReference mStorageReference;
 
     public ProfileViewModel(@NonNull Application application) {
         super(application);
@@ -28,6 +32,7 @@ public final class ProfileViewModel extends AndroidViewModel implements ValueEve
         if (currentUser != null) {
             this.mDatabaseReference = FirebaseDatabase.getInstance().getReference("profiles/" + currentUser.getUid());
             this.mDatabaseReference.addValueEventListener(this);
+            this.mStorageReference = FirebaseStorage.getInstance().getReference("user-avatar");
         }
     }
 
@@ -36,12 +41,19 @@ public final class ProfileViewModel extends AndroidViewModel implements ValueEve
     }
 
     public void save(Profile profile) {
-        Log.i(TAG, "Livedata Profile: " + this.profileData.getValue());
-        Log.i(TAG, "Profile: " + profile);
         if (mDatabaseReference != null) {
             this.mDatabaseReference.setValue(profile.toMap());
             this.profileData.postValue(profile);
         }
+    }
+
+    public void uploadAndSave(final Uri fileUri, final Profile profile) {
+        final StorageReference reference = this.mStorageReference.child(fileUri.getLastPathSegment());
+        reference.putFile(fileUri)
+                .addOnSuccessListener(task -> {
+                    profile.setAvatarUrl(task.getDownloadUrl().toString());
+                    save(profile);
+                });
     }
 
     @Override

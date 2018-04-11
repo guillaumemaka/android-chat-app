@@ -38,6 +38,8 @@
     <string name="tos_error_message">Veuillez accepter les conditions d\'utilisation.</string>
     <string name="registration_failed_message">La création du compte à echouée.</string>
     <string name="login_failed_message">L\'authentification à échouée.</string>
+    <string name="external_storage_permission_rationale">Pour mettre à jour votre j\'ai besoin d\'avoir accès à votre carte SD de votre téléphone!</string>
+    <string name="activity_profile_title">Profile</string>
 
 
 </resources>
