@@ -33,11 +33,9 @@
             android:theme="@android:style/Theme.Material.Light.NoActionBar.Fullscreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-
 
         <activity android:name="com.espacepiins.messenger.ui.RoomActivity">
             <meta-data
@@ -72,16 +70,11 @@
             android:exported="false">
         </service>
 
-        <provider
-            android:name="android.support.v4.content.FileProvider"
-            android:authorities="${applicationId}.com.vansuita.pickimage.provider"
-            android:exported="false"
-            android:grantUriPermissions="true"
-            tools:replace="android:authorities">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/picker_provider_paths"/>
-        </provider>
+        <receiver
+            android:name=".service.ContactImportReceiver"
+            android:enabled="false"
+            android:exported="false">
+        </receiver>
     </application>
 
 </manifest>

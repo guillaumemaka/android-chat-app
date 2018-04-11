@@ -5,6 +5,7 @@ import android.app.Application;
 import com.crashlytics.android.Crashlytics;
 import com.espacepiins.messenger.BuildConfig;
 import com.espacepiins.messenger.db.AppDatabase;
+import com.espacepiins.messenger.ui.viewmodel.AppViewModel;
 import com.facebook.stetho.Stetho;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -37,5 +38,9 @@ public class MessengerApplicationContext extends Application {
 
     public AppDatabase getAppDatabaseInstance(){
         return AppDatabase.getInstance(this);
+    }
+
+    public AppViewModel getAppViewModel(){
+        return AppViewModel.getInstance(this);
     }
 }

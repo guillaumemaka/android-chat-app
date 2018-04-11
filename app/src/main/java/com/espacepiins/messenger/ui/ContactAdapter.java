@@ -2,6 +2,7 @@ package com.espacepiins.messenger.ui;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,11 +14,13 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
+import com.espacepiins.messenger.R;
 import com.espacepiins.messenger.model.Contact;
 import com.espacepiins.messenger.model.SearchContactResult;
 import com.espacepiins.messenger.ui.ContactListFragment.OnListFragmentInteractionListener;
-import com.espacepiins.messsenger.R;
+import com.espacepiins.messenger.ui.callback.ContactSearchResultDiffCallback;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -35,6 +38,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
     private OnListFragmentInteractionListener mListener;
 
     public ContactAdapter() {
+        mContacts = new ArrayList<>();
     }
 
     public ContactAdapter(@Nullable final List<SearchContactResult> items, @Nullable final OnListFragmentInteractionListener listener) {
@@ -53,6 +57,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
     public void onBindViewHolder(final ContactViewHolder holder, int position) {
         holder.setContact(mContacts.get(position));
         Log.d(ContactAdapter.class.getName(), mContacts.get(position).getDisplayName());
+
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -72,16 +77,17 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
 
     @Override
     public void setContacts(final List<SearchContactResult> contacts) {
-        Log.d(ContactAdapter.class.getName(), "Contacts size: " + contacts.size());
+        DiffUtil.DiffResult result = DiffUtil.calculateDiff(new ContactSearchResultDiffCallback(mContacts, contacts));
         mContacts = contacts;
-        notifyDataSetChanged();
+        result.dispatchUpdatesTo(this);
     }
 
     public void setListener(final OnListFragmentInteractionListener listener) {
         mListener = listener;
     }
 
-    public static class ContactViewHolder extends RecyclerView.ViewHolder {
+    public class ContactViewHolder extends RecyclerView.ViewHolder {
+        private final String TAG = ContactViewHolder.class.getName();
         @BindView(R.id.row)
         View mView;
         @BindView(R.id.contact_avatar)
@@ -104,6 +110,10 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
 
         public void setContact(@NonNull final SearchContactResult contact) {
             mContact = contact;
+            updateUI(contact);
+        }
+
+        private void updateUI(@NonNull SearchContactResult contact) {
             mDisplayNameTextView.setText(contact.getDisplayName());
 
             if(mContact.getEmailAddresses() != null && mContact.getEmailAddresses().size() > 0){
@@ -114,10 +124,10 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
                 }
             }
 
-            if(mContact.getFirebaseUID() == null){
-                mInAppStatus.setImageResource(R.drawable.ic_men);
-            }else {
+            if(mContact.getFirebaseUID() != null && !mContact.getFirebaseUID().isEmpty()){
                 mInAppStatus.setImageResource(R.drawable.ic_chat_bubbles);
+            }else {
+                mInAppStatus.setImageResource(R.drawable.ic_men);
             }
 
             Glide.with(mView)

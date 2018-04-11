@@ -67,14 +67,14 @@ public class PhoneEntity {
 
         PhoneEntity that = (PhoneEntity) o;
 
-        if (!phoneType.equals(that.phoneType)) return false;
-        return phoneNumber.equals(that.phoneNumber);
+        if (!phoneNumber.equals(that.phoneNumber)) return false;
+        return contactLookupKey.equals(that.contactLookupKey);
     }
 
     @Override
     public int hashCode() {
-        int result = phoneType.hashCode();
-        result = 31 * result + phoneNumber.hashCode();
+        int result = phoneNumber.hashCode();
+        result = 31 * result + contactLookupKey.hashCode();
         return result;
     }
 }

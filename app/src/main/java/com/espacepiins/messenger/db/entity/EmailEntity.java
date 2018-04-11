@@ -11,7 +11,7 @@ import android.util.Patterns;
  */
 
 @Entity(tableName = "email_addresses")
-public class EmailEntity {
+public class EmailEntity implements Comparable<EmailEntity>{
     @PrimaryKey
     @NonNull
     private String id;
@@ -70,13 +70,18 @@ public class EmailEntity {
         EmailEntity that = (EmailEntity) o;
 
         if (!emailAddress.equals(that.emailAddress)) return false;
-        return emailType.equals(that.emailType);
+        return contactLookupKey.equals(that.contactLookupKey);
     }
 
     @Override
     public int hashCode() {
         int result = emailAddress.hashCode();
-        result = 31 * result + emailType.hashCode();
+        result = 31 * result + contactLookupKey.hashCode();
         return result;
+    }
+
+    @Override
+    public int compareTo(@NonNull EmailEntity emailEntity) {
+        return emailAddress.compareTo(emailEntity.emailAddress);
     }
 }

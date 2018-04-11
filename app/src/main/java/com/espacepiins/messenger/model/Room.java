@@ -13,24 +13,26 @@ import java.util.Map;
 
 @IgnoreExtraProperties
 public class Room {
+    private String roomUID;
     private String from;
     private String fromDisplayName;
-    private Map<String, String> members;
+    private String to;
+    private String toDisplayName;
+    private String lastMessageUID;
     private String lastMessage;
-    private Date sentAt;
+    private Long lastMessageTimestamp;
+    private Long sentAt;
 
     public Room(){
-        this.members = new HashMap<String, String>();
-        this.sentAt = new Date();
+        this.sentAt = new Date().getTime();
     }
 
-    public Room(String from, String fromDisplayName, Map<String,String> members, String lastMessage, Date sentAt) {
-        this();
-        this.from = from;
-        this.fromDisplayName = fromDisplayName;
-        this.members = members;
-        this.lastMessage = lastMessage;
-        this.sentAt = sentAt;
+    public String getRoomUID() {
+        return roomUID;
+    }
+
+    public void setRoomUID(String roomUID) {
+        this.roomUID = roomUID;
     }
 
     public String getFrom() {
@@ -49,8 +51,36 @@ public class Room {
         this.from = from;
     }
 
-    public Map<String, String> getMembers() {
-        return members;
+    public String getTo() {
+        return to;
+    }
+
+    public void setTo(String to) {
+        this.to = to;
+    }
+
+    public String getToDisplayName() {
+        return toDisplayName;
+    }
+
+    public void setToDisplayName(String toDisplayName) {
+        this.toDisplayName = toDisplayName;
+    }
+
+    public String getLastMessageUID() {
+        return lastMessageUID;
+    }
+
+    public void setLastMessageUID(String lastMessageUID) {
+        this.lastMessageUID = lastMessageUID;
+    }
+
+    public Long getLastMessageTimestamp() {
+        return lastMessageTimestamp;
+    }
+
+    public void setLastMessageTimestamp(Long lastMessageTimestamp) {
+        this.lastMessageTimestamp = lastMessageTimestamp;
     }
 
     public String getLastMessage() {
@@ -61,30 +91,25 @@ public class Room {
         this.lastMessage = lastMessage;
     }
 
-    public Date getSentAt() {
+    public Long getSentAt() {
         return sentAt;
     }
 
-    public void setSentAt(Date sentAt) {
+    public void setSentAt(Long sentAt) {
         this.sentAt = sentAt;
-    }
-
-
-
-    public void addMember(String username, String displayName){
-        if(!members.containsKey(username)){
-            this.members.put(username,  displayName);
-        }
     }
 
     @Exclude
     public Map<String, Object> toMap(){
         HashMap<String, Object> values = new HashMap<>();
+        values.put("roomUID", this.getRoomUID());
         values.put("from", this.getFrom());
         values.put("fromDisplayName", this.getFromDisplayName());
-        values.put("members", this.getMembers());
+        values.put("lastMessageUID", this.getLastMessageUID());
+        values.put("lastMessageTimestamp", this.getLastMessageTimestamp());
+        values.put("to", this.getTo());
+        values.put("toDisplayName", this.getToDisplayName());
         values.put("lastMessage", this.getLastMessage());
-        values.put("sentAt", this.getSentAt().getTime());
         return values;
     }
 }

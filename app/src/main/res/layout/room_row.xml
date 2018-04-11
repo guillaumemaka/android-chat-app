@@ -1,64 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              android:id="@+id/room_row"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:background="@drawable/recycler_view_backgound"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    >
-
-    <ImageView
-        android:id="@+id/room_row_avatar"
-        android:layout_width="@dimen/avatar_size_small"
-        android:layout_height="@dimen/avatar_size_small"
-        android:layout_marginBottom="10dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="10dp"
-        android:layout_weight="0"
-        android:background="@drawable/ic_face"
-        android:maxHeight="32dp"
-        android:maxWidth="32dp"
-        android:minHeight="32dp"
-        android:minWidth="32dp"
-        app:srcCompat="@drawable/avatar_overlay_small"/>
+    <data>
+        <variable
+            name="room"
+            type="com.espacepiins.messenger.db.entity.RoomEntity"/>
+    </data>
 
     <LinearLayout
+        android:id="@+id/room_row"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:background="@drawable/recycler_view_backgound"
 
-        <TextView
-            android:id="@+id/room_row_displayName"
+        >
+
+        <ImageView
+            android:id="@+id/room_row_avatar"
+            android:layout_width="@dimen/avatar_size_small"
+            android:layout_height="@dimen/avatar_size_small"
+            android:layout_marginBottom="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_weight="0"
+            android:background="@drawable/ic_face"
+            android:maxHeight="32dp"
+            android:maxWidth="32dp"
+            android:minHeight="32dp"
+            android:minWidth="32dp"
+            app:srcCompat="@drawable/avatar_overlay_small"/>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-medium"
-            android:text="TextView"/>
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/room_row_displayName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="@{room.displayName}"/>
+
+            <TextView
+                android:id="@+id/room_row_lastMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:fontFamily="sans-serif-thin"
+                android:text="@{room.lastMessage}"
+                android:textStyle="italic"/>
+
+        </LinearLayout>
 
         <TextView
-            android:id="@+id/room_row_lastMessage"
+            android:id="@+id/lastMessageTime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:fontFamily="sans-serif-thin"
-            android:text="TextView"
-            android:textStyle="italic"/>
+            android:layout_gravity="top|end"
+            android:layout_marginEnd="20dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="10dp"
+            android:layout_weight="2"
+            android:text="@{room.lastMessageDate.toString()}"
+            android:textAlignment="center"/>
 
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/lastMessageTime"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|end"
-        android:layout_marginEnd="20dp"
-        android:layout_marginStart="5dp"
-        android:layout_marginTop="10dp"
-        android:layout_weight="2"
-        android:text="TextView"
-        android:textAlignment="center"/>
-
-</LinearLayout>
+</layout>

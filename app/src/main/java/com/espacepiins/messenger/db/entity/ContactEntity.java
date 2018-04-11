@@ -15,7 +15,7 @@ import com.espacepiins.messenger.model.Contact;
  */
 
 @Entity(tableName = "contacts")
-public class ContactEntity implements Contact {
+public class ContactEntity implements Contact, Comparable<ContactEntity> {
     @PrimaryKey
     @NonNull
     private String id;
@@ -124,4 +124,24 @@ public class ContactEntity implements Contact {
             return new ContactEntity[0];
         }
     };
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ContactEntity)) return false;
+
+        ContactEntity that = (ContactEntity) o;
+
+        return lookupKey.equals(that.getLookupKey());
+    }
+
+    @Override
+    public int hashCode() {
+        return lookupKey.hashCode();
+    }
+
+    @Override
+    public int compareTo(@NonNull ContactEntity contactEntity) {
+        return displayName.compareTo(contactEntity.getDisplayName());
+    }
 }

@@ -42,4 +42,12 @@
     <string name="activity_profile_title">Profile</string>
 
 
+    <string name="string_snackbar_import_action">IMPORT</string>
+    <string name="snackbar_contact_import_messasge">Communiquer avec des amis c\'est mieux, voulez-vous importer des contacts de votre carnet d\'adresse, je me chargerai de vous indiquez avec qui vous pouvez communiquer</string>
+    <string name="snackbar_contact_import_done_message">Importation de vos contact terminée.</string>
+    <string name="string_no_data">Aucune conversation! \n Pourquoi ne pas commencer maintenant!</string>
+    <string name="email_type_label_home">Domicile</string>
+    <string name="email_type_label_mobile">Cellulaire</string>
+    <string name="email_type_label_work">Travail</string>
+    <string name="type_label_other">Autre</string>
 </resources>

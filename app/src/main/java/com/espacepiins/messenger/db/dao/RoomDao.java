@@ -20,6 +20,9 @@ import java.util.List;
 @Dao
 @TypeConverters(DateConverter.class)
 public interface RoomDao {
+    @Query("SELECT * FROM rooms WHERE room_uid = :roomId")
+    RoomEntity getRoomById(String roomId);
+
     @Query("SELECT * FROM rooms WHERE deleted = 0 AND archived = 0")
     LiveData<List<RoomEntity>> getRooms();
 

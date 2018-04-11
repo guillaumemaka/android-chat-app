@@ -1,14 +1,14 @@
 package com.espacepiins.messenger.ui;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,9 +17,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
-import com.espacepiins.messenger.db.AppDatabase;
 import com.espacepiins.messenger.R;
 import com.espacepiins.messenger.model.SearchContactResult;
+import com.espacepiins.messenger.ui.viewmodel.ContactSearchViewModel;
 
 import java.util.List;
 
@@ -35,12 +35,11 @@ import butterknife.ButterKnife;
 public class ContactListFragment extends Fragment {
 
     public static final String SEARCH_TERM_KEY = "search_term";
-    private final int READ_CONTACTS_REQUEST_CODE = 04400;
 
     private final String TAG = ContactListFragment.class.getName();
     private ContactAdapter mAdapter;
-    private AppDatabase mAppDatabase;
     private String mSearchTerm;
+    private ContactSearchViewModel mContactSearchViewModel;
 
     @BindView(R.id.list)
     RecyclerView mRecyclerView;
@@ -58,28 +57,29 @@ public class ContactListFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if(savedInstanceState != null){
-            mSearchTerm = savedInstanceState.getString(SEARCH_TERM_KEY,null);
-        }
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_contact_list, container, false);
 
         ButterKnife.bind(this, view);
 
+        mProgressBar.setVisibility(View.GONE);
+
         mAdapter = new ContactAdapter();
         mAdapter.setListener(mListener);
-
-        mProgressBar.setVisibility(View.GONE);
-        mRecyclerView.setVisibility(View.GONE);
-
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         mRecyclerView.setAdapter(mAdapter);
+
+        mContactSearchViewModel.getContactSearchResults().observe(this, new Observer<List<SearchContactResult>>() {
+            @Override
+            public void onChanged(@Nullable List<SearchContactResult> searchContactResults) {
+                mProgressBar.setVisibility(View.GONE);
+                mRecyclerView.setVisibility(View.VISIBLE);
+                mAdapter.setContacts(searchContactResults);
+            }
+        });
+
+        mContactSearchViewModel.search("");
 
         setHasOptionsMenu(true);
 
@@ -98,13 +98,16 @@ public class ContactListFragment extends Fragment {
                     + " must implement OnListFragmentInteractionListener");
         }
 
-        mAppDatabase = AppDatabase.getInstance(getContext());
+        mContactSearchViewModel = ViewModelProviders.of(this).get(ContactSearchViewModel.class);
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        new SearchContactAsyncTask().execute();
+        if(savedInstanceState != null){
+            mSearchTerm = savedInstanceState.getString(SEARCH_TERM_KEY, "");
+            mContactSearchViewModel.search(mSearchTerm);
+        }
     }
 
     @Override
@@ -115,8 +118,8 @@ public class ContactListFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putString(SEARCH_TERM_KEY, mSearchTerm);
         super.onSaveInstanceState(outState);
+        outState.putString(SEARCH_TERM_KEY, mSearchTerm);
     }
 
     @Override
@@ -129,8 +132,8 @@ public class ContactListFragment extends Fragment {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 searchView.clearFocus();
-
-                new SearchContactAsyncTask().execute(query);
+                mProgressBar.setVisibility(View.VISIBLE);
+                mContactSearchViewModel.search(query);
 
                 return true;
             }
@@ -139,6 +142,9 @@ public class ContactListFragment extends Fragment {
             public boolean onQueryTextChange(String newText) {
 //                mSearchContactAsyncTask.execute(newText);
                 mSearchTerm = newText;
+                if(newText.isEmpty()){
+                    mContactSearchViewModel.search("");
+                }
                 return true;
             }
         });
@@ -148,44 +154,6 @@ public class ContactListFragment extends Fragment {
         }
 
         super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    /**
-     * Task responsible of searching a contact
-     */
-    public class SearchContactAsyncTask extends AsyncTask<String, Void, List<SearchContactResult>> {
-        @Override
-        protected List<SearchContactResult> doInBackground(String... terms) {
-
-            if(terms.length == 0){
-                return mAppDatabase.contactDao().search("");
-            }
-
-            if(terms[0].isEmpty()){
-                return mAppDatabase.contactDao().search("");
-            }
-
-            Log.d(SearchContactAsyncTask.class.getName(), "Search term: " + terms[0]);
-            return mAppDatabase.contactDao().search(terms[0]);
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mProgressBar.setVisibility(View.VISIBLE);
-            mRecyclerView.setVisibility(View.GONE);
-        }
-
-        @Override
-        protected void onPostExecute(List<SearchContactResult> contacts) {
-            super.onPostExecute(contacts);
-
-            Log.d(SearchContactAsyncTask.class.getName(), "Contacts length: " + contacts.size());
-
-            mAdapter.setContacts(contacts);
-            mProgressBar.setVisibility(View.GONE);
-            mRecyclerView.setVisibility(View.VISIBLE);
-        }
     }
 
     /**

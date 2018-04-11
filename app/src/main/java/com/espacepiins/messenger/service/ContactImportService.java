@@ -11,6 +11,7 @@ import android.util.Log;
 import android.util.Patterns;
 
 import com.espacepiins.messenger.BuildConfig;
+import com.espacepiins.messenger.R;
 import com.espacepiins.messenger.db.AppDatabase;
 import com.espacepiins.messenger.db.entity.ContactEntity;
 import com.espacepiins.messenger.db.entity.EmailEntity;
@@ -23,7 +24,7 @@ import java.util.List;
  * An {@link IntentService} subclass for handling asynchronous task requests in
  * a service on a separate handler thread.
  * <p>
- *
+ * <p>
  * helper methods.
  */
 public class ContactImportService extends IntentService {
@@ -38,18 +39,19 @@ public class ContactImportService extends IntentService {
             ContactsContract.CommonDataKinds.Phone.TYPE,
             ContactsContract.CommonDataKinds.Email.LABEL,
             ContactsContract.CommonDataKinds.Phone.NUMBER,
+            ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER,
             ContactsContract.CommonDataKinds.Phone.TYPE,
             ContactsContract.CommonDataKinds.Phone.LABEL,
             ContactsContract.CommonDataKinds.Photo.PHOTO_THUMBNAIL_URI
     };
 
-    private static final String SELECTION ="((" +
+    private static final String SELECTION = "((" +
             ContactsContract.Data.DISPLAY_NAME_PRIMARY + " NOTNULL) AND (" +
-            ContactsContract.Data.DISPLAY_NAME_PRIMARY + " != '' ) AND ("+
+            ContactsContract.Data.DISPLAY_NAME_PRIMARY + " != '' ) AND (" +
             ContactsContract.CommonDataKinds.Phone.NUMBER + " NOTNULL) AND (" +
             ContactsContract.CommonDataKinds.Phone.NUMBER + " != '') AND (" +
-            ContactsContract.CommonDataKinds.Email.ADDRESS+ " NOTNULL) AND (" +
-            ContactsContract.CommonDataKinds.Email.ADDRESS+ " != ''))";
+            ContactsContract.CommonDataKinds.Email.ADDRESS + " NOTNULL) AND (" +
+            ContactsContract.CommonDataKinds.Email.ADDRESS + " != ''))";
 //            ContactsContract.CommonDataKinds.Phone.TYPE + " = '" + ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE + "') AND (" +
 //            ContactsContract.Data.MIMETYPE + " = '" + ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE + "') AND (" +
 //            ContactsContract.Data.MIMETYPE + " = '" + ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE + "'))";
@@ -71,7 +73,6 @@ public class ContactImportService extends IntentService {
     }
 
 
-
     @Override
     protected void onHandleIntent(Intent intent) {
         if (intent != null) {
@@ -83,9 +84,9 @@ public class ContactImportService extends IntentService {
         }
     }
 
-    private void brooadcast(){
+    private void brooadcast(String action) {
         Intent intent = new Intent();
-        intent.setAction(ContactImportReceiver.CONTACT_IMPORTED_ACTION);
+        intent.setAction(action);
         sendBroadcast(intent);
     }
 
@@ -96,9 +97,11 @@ public class ContactImportService extends IntentService {
     private void handleActionContactImport() {
         AppDatabase db = AppDatabase.getInstance(getApplicationContext());
 
-//        if(BuildConfig.DEBUG){
-//            db.contactDao().deleteAll();
-//        }
+        if(BuildConfig.DEBUG){
+            db.contactDao().deleteAllContacts();
+            db.contactDao().deleteAllEmails();
+            db.contactDao().deleteAllPhones();
+        }
 
         Log.i(TAG, "handleActionContactImport");
         ContentResolver contentResolver = getContentResolver();
@@ -109,12 +112,14 @@ public class ContactImportService extends IntentService {
                 null,
                 ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " COLLATE LOCALIZED ASC");
         extractContactsFromCursor(db, data);
+        brooadcast(ContactImportReceiver.CONTACT_IMPORTED_ACTION);
     }
 
     /**
-     * Helper method for extracting contact from a cursor
+     * Helper method for extracting/persisting contacts from a cursor
+     *
+     * @param db a room database instance
      * @param data a cursor containing contact information
-     * @return a list of contacts
      */
     @NonNull
     private void extractContactsFromCursor(AppDatabase db, Cursor data) {
@@ -124,7 +129,7 @@ public class ContactImportService extends IntentService {
 
         data.moveToFirst();
 
-        while (data.moveToNext()){
+        while (data.moveToNext()) {
             String _id = data.getString(data.getColumnIndex(ContactsContract.Data._ID));
             String lookupKey = data.getString(data.getColumnIndex(ContactsContract.Data.LOOKUP_KEY));
             String displayName = data.getString(data.getColumnIndex(ContactsContract.Data.DISPLAY_NAME_PRIMARY));
@@ -132,61 +137,151 @@ public class ContactImportService extends IntentService {
             String emailAddressType = data.getString(data.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE));
             String emailAddressLabel = data.getString(data.getColumnIndex(ContactsContract.CommonDataKinds.Email.LABEL));
             String phoneNumber = data.getString(data.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+            String normalizedPhoneNumber = data.getString(data.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER));
             String phoneNumberType = data.getString(data.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE));
             String phoneNumberLabel = data.getString(data.getColumnIndex(ContactsContract.CommonDataKinds.Phone.LABEL));
             String photoThumbnailUri = data.getString(data.getColumnIndex(ContactsContract.CommonDataKinds.Photo.PHOTO_THUMBNAIL_URI));
 
-            if(phoneNumber != null || emailAddress != null)
-            {
-                if(BuildConfig.DEBUG){
+            if (phoneNumber != null || emailAddress != null) {
+                if (BuildConfig.DEBUG) {
                     Log.i(TAG, "id: " + _id);
                     Log.i(TAG, "displayName: " + displayName);
                     Log.i(TAG, "emailAddress: " + emailAddress);
-                    Log.i(TAG, "emailAddressType: " + emailAddressType);
+
+                    try{
+                        Log.i(TAG, "emailAddressType: " + getLabelForEmailType(Integer.valueOf(emailAddressType), emailAddressLabel));
+                    }catch (NumberFormatException e){
+                        Log.i(TAG, "emailAddressType: " + emailAddressType);
+                    }
+
                     Log.i(TAG, "emailAddressLabel: " + emailAddressLabel);
                     Log.i(TAG, "phoneNumber: " + phoneNumber);
-                    Log.i(TAG, "phoneNumberType: " + phoneNumberType);
+                    Log.i(TAG, "normalizedPhoneNumber: " + normalizedPhoneNumber);
+
+                    try {
+                        Log.i(TAG, "phoneNumberType: " + getLabelForPhoneType(Integer.valueOf(phoneNumberType), phoneNumberLabel));
+                    }catch (NumberFormatException e){
+                        Log.i(TAG, "phoneNumberType: " + phoneNumberType);
+                    }
+
                     Log.i(TAG, "phoneNumberLabel: " + phoneNumberLabel);
                     Log.i(TAG, "lookupKey: " + lookupKey);
                     Log.i(TAG, "photoThumbnailUri: " + photoThumbnailUri);
                 }
 
-                if(Patterns.PHONE.matcher(phoneNumber).matches()){
+                if (Patterns.PHONE.matcher(phoneNumber).matches()) {
                     final PhoneEntity phoneEntity = new PhoneEntity();
                     phoneEntity.setId(String.format("%s_%s", _id, phoneNumberType));
                     phoneEntity.setPhoneNumber(phoneNumber);
                     phoneEntity.setPhoneType(phoneNumberType);
                     phoneEntity.setContactLookupKey(lookupKey);
-                    phones.add(phoneEntity);
+                    if(!phones.contains(phoneEntity))
+                        phones.add(phoneEntity);
                 }
 
 
-                if(Patterns.EMAIL_ADDRESS.matcher(emailAddress).matches()){
+                if (Patterns.EMAIL_ADDRESS.matcher(emailAddress).matches()) {
                     final EmailEntity emailEntity = new EmailEntity();
                     emailEntity.setId(String.format("%s_%s", _id, emailAddressType));
                     emailEntity.setEmailAddress(emailAddress);
                     emailEntity.setEmailType(emailAddressType);
                     emailEntity.setContactLookupKey(lookupKey);
 
-                    emails.add(emailEntity);
+                    if(!emails.contains(emailEntity))
+                        emails.add(emailEntity);
                 }
 
                 final ContactEntity contactEntity = new ContactEntity();
 
-                contactEntity.setDisplayName(displayName);
                 contactEntity.setId(_id);
+                contactEntity.setDisplayName(displayName);
                 contactEntity.setLookupKey(lookupKey);
                 contactEntity.setPhotoThumbnailUri(photoThumbnailUri);
 
-                contacts.add(contactEntity);
+                if(!contacts.contains(contactEntity))
+                    contacts.add(contactEntity);
             }
         }
 
         db.contactDao().insertContacts(contacts);
         db.contactDao().insertEmails(emails);
         db.contactDao().insertPhones(phones);
+    }
 
-        Log.d(TAG, "Search empty size: " + db.contactDao().search("").size());
-        Log.d(TAG, "Search 'adam' size: " + db.contactDao().search("adam").size());
+    private String getLabelForEmailType(int type, String customLabel) {
+        switch (type) {
+            case ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM:
+                if(customLabel == null)
+                    return getString(R.string.type_label_other);
+
+                if(customLabel.isEmpty())
+                    return getString(R.string.type_label_other);
+
+                return customLabel;
+            case ContactsContract.CommonDataKinds.Email.TYPE_HOME:
+                return getString(R.string.email_type_label_home);
+            case ContactsContract.CommonDataKinds.Email.TYPE_MOBILE:
+                return getString(R.string.email_type_label_mobile);
+            case ContactsContract.CommonDataKinds.Email.TYPE_WORK:
+                return getString(R.string.email_type_label_work);
+            case ContactsContract.CommonDataKinds.Email.TYPE_OTHER:
+            default:
+                return getString(R.string.type_label_other);
+        }
+    }
+
+    private String getLabelForPhoneType(int type, String customLabel) {
+        switch (type) {
+            case ContactsContract.CommonDataKinds.Phone.TYPE_CUSTOM:
+                if(customLabel == null)
+                    return getString(R.string.type_label_other);
+
+                if(customLabel.isEmpty())
+                    return getString(R.string.type_label_other);
+
+                return customLabel;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_ASSISTANT:
+                return "Assistant";
+            case ContactsContract.CommonDataKinds.Phone.TYPE_CALLBACK:
+                return "Rappel";
+            case ContactsContract.CommonDataKinds.Phone.TYPE_CAR:
+                return "Voiture";
+            case ContactsContract.CommonDataKinds.Phone.TYPE_COMPANY_MAIN:
+                return "Entreprise (Principal)";
+            case ContactsContract.CommonDataKinds.Phone.TYPE_FAX_HOME:
+                return "Fax (Domicile)";
+            case ContactsContract.CommonDataKinds.Phone.TYPE_FAX_WORK:
+                return "Fac (Travail)";
+            case ContactsContract.CommonDataKinds.Phone.TYPE_HOME:
+                return "Domicile";
+            case ContactsContract.CommonDataKinds.Phone.TYPE_ISDN:
+                return "ISDN";
+            case ContactsContract.CommonDataKinds.Phone.TYPE_MAIN:
+                return "Principal";
+            case ContactsContract.CommonDataKinds.Phone.TYPE_MMS:
+                return "MMS";
+            case ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE:
+                return "Cellulaire";
+            case ContactsContract.CommonDataKinds.Phone.TYPE_OTHER:
+                return "";
+            case ContactsContract.CommonDataKinds.Phone.TYPE_OTHER_FAX:
+                return "Fax (autre)";
+            case ContactsContract.CommonDataKinds.Phone.TYPE_PAGER:
+                return "Pagette";
+            case ContactsContract.CommonDataKinds.Phone.TYPE_RADIO:
+                return "Radio";
+            case ContactsContract.CommonDataKinds.Phone.TYPE_TELEX:
+                return "TELEX";
+            case ContactsContract.CommonDataKinds.Phone.TYPE_TTY_TDD:
+                return "TTY TDD";
+            case ContactsContract.CommonDataKinds.Phone.TYPE_WORK:
+                return "Travail";
+            case ContactsContract.CommonDataKinds.Phone.TYPE_WORK_MOBILE:
+                return "Cellulaire (Travail)";
+            case ContactsContract.CommonDataKinds.Phone.TYPE_WORK_PAGER:
+                return "Pagette (Travail)";
+            default:
+                return getString(R.string.type_label_other);
+        }
     }
 }

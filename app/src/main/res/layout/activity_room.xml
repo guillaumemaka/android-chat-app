@@ -2,6 +2,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent" android:orientation="vertical">
 
@@ -16,25 +17,47 @@
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         >
 
-        <LinearLayout
+        <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="horizontal">
+            >
 
             <ImageButton
-
                 android:id="@+id/profife_avatar_button"
-                android:layout_width="@dimen/avatar_size_extra_small"
+                android:layout_width="32dp"
                 android:layout_height="@dimen/avatar_size_extra_small"
-                android:layout_gravity="start"
-                android:layout_marginEnd="5dp"
-                android:layout_marginStart="4dp"
+                android:layout_marginEnd="8dp"
                 android:background="@drawable/ic_face"
                 android:contentDescription="avatar"
                 android:elevation="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/avatar_overlay_extra_small"/>
 
-        </LinearLayout>
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:tint="#bbb"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_search"/>
+
+            <TextView
+                android:id="@+id/searchView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:text="Chercher"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/profife_avatar_button"
+                app:layout_constraintStart_toEndOf="@+id/imageView"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+        </android.support.constraint.ConstraintLayout>
     </android.support.v7.widget.Toolbar>
 
     <android.support.design.widget.CoordinatorLayout
@@ -45,7 +68,8 @@
             android:id="@+id/pager"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/colorSecondary">
+            android:background="@color/colorSecondary"
+            >
 
             <android.support.design.widget.TabLayout
                 android:id="@+id/tablayout"

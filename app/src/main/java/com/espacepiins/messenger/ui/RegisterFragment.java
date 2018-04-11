@@ -16,13 +16,16 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 
+import com.espacepiins.messenger.R;
+import com.espacepiins.messenger.application.FirebaseRefs;
+import com.espacepiins.messenger.model.User;
 import com.espacepiins.messenger.ui.callback.OnAuthFragmentReplaceListener;
-import com.espacepiins.messsenger.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.FirebaseDatabase;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -174,8 +177,13 @@ public class RegisterFragment extends Fragment implements View.OnClickListener {
                         // Registration success
                         if (task.isSuccessful()) {
                             Log.d(TAG, "createUserWithEmail:success");
-                            FirebaseUser user = task.getResult().getUser();
-                            mRegistrationListener.onRegisterSuccess(user);
+                            final FirebaseUser user = task.getResult().getUser();
+                            registerUser(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    mRegistrationListener.onRegisterSuccess(user);
+                                }
+                            });
                         }
 
                         // Registration failed
@@ -192,5 +200,14 @@ public class RegisterFragment extends Fragment implements View.OnClickListener {
                 });
     }
 
-
+    private Task<Void> registerUser(FirebaseUser user){
+        return FirebaseDatabase.getInstance()
+                .getReference(FirebaseRefs.USER_PROFILES_REF)
+                .child(user.getUid())
+                .setValue(User.Builder
+                        .createBuilder()
+                        .fromFireBaseUser(user)
+                        .getUser()
+                        .toMap());
+    }
 }

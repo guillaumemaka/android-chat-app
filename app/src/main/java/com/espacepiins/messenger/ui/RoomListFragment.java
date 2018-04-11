@@ -1,20 +1,29 @@
 package com.espacepiins.messenger.ui;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.databinding.DataBindingUtil;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.espacepiins.messenger.model.Room;
-import com.espacepiins.messsenger.R;
+import com.espacepiins.messenger.R;
+import com.espacepiins.messenger.databinding.RoomRowBinding;
+import com.espacepiins.messenger.db.entity.RoomEntity;
+import com.espacepiins.messenger.ui.callback.GenericDiffCallback;
+import com.espacepiins.messenger.ui.viewmodel.RoomListViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,14 +35,14 @@ import butterknife.ButterKnife;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link RoomListFragment.OnFragmentInteractionListener} interface
+ * {@link RoomListFragment.OnRoomInteractionListener} interface
  * to handle interaction events.
  * Use the {@link RoomListFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
 public class RoomListFragment extends Fragment {
     interface OnRoomInteractionListener {
-        void onRoomSelected(Room room);
+        void onRoomSelected(RoomEntity room);
     }
 
     private final String TAG = RoomListFragment.class.getName();
@@ -41,22 +50,29 @@ public class RoomListFragment extends Fragment {
     @BindView(R.id.recyclerView)
     RecyclerView mRecyclerView;
 
+    @BindView(R.id.emptyView)
+    TextView mEmptyView;
+
     private RoomsAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
-    private List<Room> mRoomsDataSet = new ArrayList<>();
     private OnRoomInteractionListener mListener;
+
+    private RoomListViewModel mRoomListViewModel;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mAdapter = new RoomsAdapter(mRoomsDataSet);
+
         mLayoutManager = new LinearLayoutManager(this.getContext());
+        mAdapter = new RoomsAdapter();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.room_list_fragment_layout, container, false);
         ButterKnife.bind(this, view);
+        mRecyclerView.setVisibility(View.GONE);
+        mEmptyView.setVisibility(View.VISIBLE);
         return view;
     }
 
@@ -69,12 +85,6 @@ public class RoomListFragment extends Fragment {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        seedData();
-    }
-
-    @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnRoomInteractionListener) {
@@ -83,88 +93,99 @@ public class RoomListFragment extends Fragment {
             throw new RuntimeException(context.toString()
                     + " must implement OnRoomInteractionListener");
         }
+
+        mRoomListViewModel = ViewModelProviders.of(this.getActivity()).get(RoomListViewModel.class);
+
+        mRoomListViewModel.getRooms().observe(this.getActivity(), new Observer<List<RoomEntity>>() {
+            @Override
+            public void onChanged(@Nullable List<RoomEntity> rooms) {
+                mAdapter.setRooms(rooms);
+                if(rooms.size() == 0){
+                    mRecyclerView.setVisibility(View.GONE);
+                    mEmptyView.setVisibility(View.VISIBLE);
+                }else {
+                    mRecyclerView.setVisibility(View.VISIBLE);
+                    mEmptyView.setVisibility(View.GONE);
+                }
+            }
+        });
+
         Log.d(TAG, "onAttach()");
-    }
-
-    public void seedData(){
-        String[] usernames = new String[]{"etsraphael", "idrick_k", "gmaka"};
-        String[] names = new String[]{"Raphaël Etang-Sale", "Idrick Kuisseau", "Guillaume Maka"};
-        String[] lastMessages = new String[]{
-                "Je suis à la cafétéria",
-                "Le cours d'aujourd'hui est annulé",
-                "Demain rendez-vous TP Android"
-        };
-
-        for(int i=0;i<names.length;i++){
-            Room room = new Room();
-            room.setFrom(usernames[i]);
-            room.setFromDisplayName(names[i]);
-            room.setLastMessage(lastMessages[i]);
-            mRoomsDataSet.add(room);
-        }
-        mAdapter.setRooms(mRoomsDataSet);
     }
 
     /**
      *
      */
     public class RoomsAdapter extends RecyclerView.Adapter<RoomsAdapter.ViewHolder>{
-        private List<Room> mRooms;
+        private List<RoomEntity> mRooms;
+
+        public RoomsAdapter() {
+            this.mRooms = new ArrayList<>();
+        }
 
         public class ViewHolder extends RecyclerView.ViewHolder {
-            @BindView(R.id.room_row)
-            View row;
+            RoomRowBinding binding;
+            ViewHolder(RoomRowBinding binding){
+                super(binding.getRoot());
+                this.binding = binding;
+            }
 
-            @BindView(R.id.room_row_displayName)
-            TextView displayName;
-
-            @BindView(R.id.room_row_lastMessage)
-            TextView lastMessage;
-
-            @BindView(R.id.room_row_avatar)
-            ImageView avatar;
-
-            @BindView(R.id.lastMessageTime)
-            TextView lastMessageTime;
-
-            ViewHolder(View v){
-                super(v);
-                ButterKnife.bind(this, v);
+            public void bind(RoomEntity room){
+                binding.setRoom(room);
+                binding.executePendingBindings();
             }
         }
 
-        public RoomsAdapter(List<Room> rooms) {
-            mRooms = rooms;
-        }
-
-        public void setRooms(List<Room> rooms){
+        public void setRooms(List<RoomEntity> rooms){
+            DiffUtil.DiffResult result = DiffUtil.calculateDiff(new GenericDiffCallback(this.mRooms, rooms));
             this.mRooms = rooms;
-            this.notifyDataSetChanged();
+            result.dispatchUpdatesTo(this);
         }
 
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            ViewGroup view = (ViewGroup) LayoutInflater.from(parent.getContext()).inflate(R.layout.room_row, parent, false);
-            ViewHolder vh = new ViewHolder(view);
-            return vh;
+            LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
+            RoomRowBinding binding = DataBindingUtil.inflate(layoutInflater, viewType, parent, false);
+            return new ViewHolder(binding);
         }
 
         @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
-            final Room room = mRooms.get(position);
-            holder.displayName.setText(room.getFromDisplayName());
-            holder.lastMessage.setText(room.getLastMessage());
-            holder.row.setOnClickListener(new View.OnClickListener() {
+        public void onBindViewHolder(final ViewHolder holder, int position) {
+            final RoomEntity room = mRooms.get(position);
+            holder.bind(room);
+            holder.binding.roomRow.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    mListener.onRoomSelected(room);
+                    mListener.onRoomSelected(holder.binding.getRoom());
+                    Toast.makeText(getActivity(), "Implementer dans le jalon 3", Toast.LENGTH_SHORT)
+                            .show();
                 }
             });
         }
 
         @Override
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull List<Object> payloads) {
+            if(payloads.isEmpty()){
+                onBindViewHolder(holder, position);
+            }else {
+                RoomEntity roomEntity = this.mRooms.get(position);
+                for(Object data : payloads){
+                    switch ((GenericDiffCallback.DiffState) data){
+                        case STATE_NEW:
+                            holder.binding.roomRowDisplayName.setTypeface(null, Typeface.BOLD_ITALIC);
+                            holder.binding.lastMessageTime.setTypeface(null, Typeface.BOLD_ITALIC);
+                            holder.binding.roomRowLastMessage.setTypeface(null, Typeface.BOLD_ITALIC);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+
+        @Override
         public int getItemCount() {
-            return mRooms.size();
+            return mRooms == null ? 0 : mRooms.size();
         }
     }
 }

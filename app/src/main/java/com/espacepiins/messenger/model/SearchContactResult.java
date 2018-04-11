@@ -6,6 +6,7 @@ import android.arch.persistence.room.Relation;
 import com.espacepiins.messenger.db.entity.EmailEntity;
 import com.espacepiins.messenger.db.entity.PhoneEntity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -75,5 +76,38 @@ public class SearchContactResult  {
 
     public void setPhoneNumbers(List<PhoneEntity> phoneNumbers) {
         this.phoneNumbers = phoneNumbers;
+    }
+
+    public List<String> getEmails(){
+        final List<String> emails = new ArrayList<>();
+        for(EmailEntity emailEntity : getEmailAddresses()){
+            emails.add(emailEntity.getEmailAddress());
+        }
+        return emails;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SearchContactResult)) return false;
+
+        SearchContactResult that = (SearchContactResult) o;
+
+        if (lookupKey != null ? !lookupKey.equals(that.lookupKey) : that.lookupKey != null)
+            return false;
+        if (displayName != null ? !displayName.equals(that.displayName) : that.displayName != null)
+            return false;
+        if (firebaseUID != null ? !firebaseUID.equals(that.firebaseUID) : that.firebaseUID != null)
+            return false;
+        return photoThumbnailUri != null ? photoThumbnailUri.equals(that.photoThumbnailUri) : that.photoThumbnailUri == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = lookupKey != null ? lookupKey.hashCode() : 0;
+        result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
+        result = 31 * result + (firebaseUID != null ? firebaseUID.hashCode() : 0);
+        result = 31 * result + (photoThumbnailUri != null ? photoThumbnailUri.hashCode() : 0);
+        return result;
     }
 }

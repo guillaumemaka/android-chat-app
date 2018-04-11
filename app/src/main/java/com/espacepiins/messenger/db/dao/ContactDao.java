@@ -23,6 +23,9 @@ public interface ContactDao {
     @Query("SELECT * FROM contacts WHERE id = :id")
     ContactEntity get(String id);
 
+    @Query("SELECT * FROM contacts WHERE lookup_key = :lookupKey")
+    ContactEntity getByLookupKey(String lookupKey);
+
     @Query("SELECT * from contacts")
     List<ContactEntity> getAll();
 
@@ -64,5 +67,11 @@ public interface ContactDao {
     void update(ContactEntity... contacts);
 
     @Query("DELETE FROM contacts")
-    void deleteAll();
+    void deleteAllContacts();
+
+    @Query("DELETE FROM email_addresses")
+    void deleteAllEmails();
+
+    @Query("DELETE FROM phone_numbers")
+    void deleteAllPhones();
 }
