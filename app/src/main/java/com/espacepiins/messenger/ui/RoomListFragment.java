@@ -17,13 +17,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.espacepiins.messenger.R;
-import com.espacepiins.messenger.databinding.RoomRowBinding;
-import com.espacepiins.messenger.db.entity.RoomEntity;
+import com.espacepiins.messenger.model.Room;
 import com.espacepiins.messenger.ui.callback.GenericDiffCallback;
 import com.espacepiins.messenger.ui.viewmodel.RoomListViewModel;
+import com.espacepiins.messsenger.R;
+import com.espacepiins.messsenger.databinding.RoomRowBinding;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,12 +38,10 @@ import butterknife.ButterKnife;
  * Activities that contain this fragment must implement the
  * {@link RoomListFragment.OnRoomInteractionListener} interface
  * to handle interaction events.
- * Use the {@link RoomListFragment#newInstance} factory method to
- * create an instance of this fragment.
  */
 public class RoomListFragment extends Fragment {
     interface OnRoomInteractionListener {
-        void onRoomSelected(RoomEntity room);
+        void onRoomSelected(Room room);
     }
 
     private final String TAG = RoomListFragment.class.getName();
@@ -58,66 +57,62 @@ public class RoomListFragment extends Fragment {
     private OnRoomInteractionListener mListener;
 
     private RoomListViewModel mRoomListViewModel;
+    private FirebaseUser mCurrentUser;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        mLayoutManager = new LinearLayoutManager(this.getContext());
-        mAdapter = new RoomsAdapter();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.room_list_fragment_layout, container, false);
         ButterKnife.bind(this, view);
-        mRecyclerView.setVisibility(View.GONE);
-        mEmptyView.setVisibility(View.VISIBLE);
-        return view;
-    }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        Log.d(TAG, "onActivityCreated() - " + this.getActivity().toString());
+        mCurrentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        mLayoutManager = new LinearLayoutManager(this.getContext());
+        mAdapter = new RoomsAdapter();
+
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mAdapter);
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnRoomInteractionListener) {
-            mListener = (OnRoomInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnRoomInteractionListener");
-        }
 
         mRoomListViewModel = ViewModelProviders.of(this.getActivity()).get(RoomListViewModel.class);
 
-        mRoomListViewModel.getRooms().observe(this.getActivity(), new Observer<List<RoomEntity>>() {
+        mRoomListViewModel.getRooms(mCurrentUser.getUid()).observe(this.getActivity(), new Observer<List<Room>>() {
             @Override
-            public void onChanged(@Nullable List<RoomEntity> rooms) {
+            public void onChanged(@Nullable List<Room> rooms) {
                 mAdapter.setRooms(rooms);
-                if(rooms.size() == 0){
+                if (rooms.size() == 0) {
                     mRecyclerView.setVisibility(View.GONE);
                     mEmptyView.setVisibility(View.VISIBLE);
-                }else {
+                } else {
                     mRecyclerView.setVisibility(View.VISIBLE);
                     mEmptyView.setVisibility(View.GONE);
                 }
             }
         });
 
+        return view;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
         Log.d(TAG, "onAttach()");
+        if (context instanceof OnRoomInteractionListener) {
+            mListener = (OnRoomInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnRoomInteractionListener");
+        }
     }
 
     /**
      *
      */
     public class RoomsAdapter extends RecyclerView.Adapter<RoomsAdapter.ViewHolder>{
-        private List<RoomEntity> mRooms;
+        private List<Room> mRooms;
 
         public RoomsAdapter() {
             this.mRooms = new ArrayList<>();
@@ -130,13 +125,13 @@ public class RoomListFragment extends Fragment {
                 this.binding = binding;
             }
 
-            public void bind(RoomEntity room){
+            public void bind(Room room) {
                 binding.setRoom(room);
                 binding.executePendingBindings();
             }
         }
 
-        public void setRooms(List<RoomEntity> rooms){
+        public void setRooms(List<Room> rooms) {
             DiffUtil.DiffResult result = DiffUtil.calculateDiff(new GenericDiffCallback(this.mRooms, rooms));
             this.mRooms = rooms;
             result.dispatchUpdatesTo(this);
@@ -145,20 +140,18 @@ public class RoomListFragment extends Fragment {
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-            RoomRowBinding binding = DataBindingUtil.inflate(layoutInflater, viewType, parent, false);
+            RoomRowBinding binding = DataBindingUtil.inflate(layoutInflater, R.layout.room_row, parent, false);
             return new ViewHolder(binding);
         }
 
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
-            final RoomEntity room = mRooms.get(position);
+            final Room room = mRooms.get(position);
             holder.bind(room);
             holder.binding.roomRow.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     mListener.onRoomSelected(holder.binding.getRoom());
-                    Toast.makeText(getActivity(), "Implementer dans le jalon 3", Toast.LENGTH_SHORT)
-                            .show();
                 }
             });
         }
@@ -168,7 +161,6 @@ public class RoomListFragment extends Fragment {
             if(payloads.isEmpty()){
                 onBindViewHolder(holder, position);
             }else {
-                RoomEntity roomEntity = this.mRooms.get(position);
                 for(Object data : payloads){
                     switch ((GenericDiffCallback.DiffState) data){
                         case STATE_NEW:
@@ -177,6 +169,9 @@ public class RoomListFragment extends Fragment {
                             holder.binding.roomRowLastMessage.setTypeface(null, Typeface.BOLD_ITALIC);
                             break;
                         default:
+                            holder.binding.roomRowDisplayName.setTypeface(null, Typeface.NORMAL);
+                            holder.binding.lastMessageTime.setTypeface(null, Typeface.NORMAL);
+                            holder.binding.roomRowLastMessage.setTypeface(null, Typeface.NORMAL);
                             break;
                     }
                 }

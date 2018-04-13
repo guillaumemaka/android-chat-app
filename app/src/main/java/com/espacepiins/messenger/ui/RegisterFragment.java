@@ -16,10 +16,10 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 
-import com.espacepiins.messenger.R;
 import com.espacepiins.messenger.application.FirebaseRefs;
-import com.espacepiins.messenger.model.User;
+import com.espacepiins.messenger.model.Profile;
 import com.espacepiins.messenger.ui.callback.OnAuthFragmentReplaceListener;
+import com.espacepiins.messsenger.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -178,7 +178,7 @@ public class RegisterFragment extends Fragment implements View.OnClickListener {
                         if (task.isSuccessful()) {
                             Log.d(TAG, "createUserWithEmail:success");
                             final FirebaseUser user = task.getResult().getUser();
-                            registerUser(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            createProfile(user).addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     mRegistrationListener.onRegisterSuccess(user);
@@ -200,14 +200,24 @@ public class RegisterFragment extends Fragment implements View.OnClickListener {
                 });
     }
 
-    private Task<Void> registerUser(FirebaseUser user){
+//    private Task<Void> registerUser(FirebaseUser user){
+//        return FirebaseDatabase.getInstance()
+//                .getReference(FirebaseRefs.REGISTERED_USERS_REF)
+//                .child(user.getUid())
+//                .setValue(User.Builder
+//                        .createBuilder()
+//                        .fromFireBaseUser(user)
+//                        .getUser()
+//                        .toMap());
+//    }
+
+    private Task<Void> createProfile(FirebaseUser user) {
         return FirebaseDatabase.getInstance()
-                .getReference(FirebaseRefs.USER_PROFILES_REF)
-                .child(user.getUid())
-                .setValue(User.Builder
+                .getReference(FirebaseRefs.USER_PROFILES_REF(user.getUid()))
+                .setValue(Profile.Builder
                         .createBuilder()
                         .fromFireBaseUser(user)
-                        .getUser()
+                        .getProfile()
                         .toMap());
     }
 }

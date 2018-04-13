@@ -13,10 +13,10 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.espacepiins.messenger.R;
 import com.espacepiins.messenger.db.entity.EmailEntity;
 import com.espacepiins.messenger.db.entity.PhoneEntity;
 import com.espacepiins.messenger.model.SearchContactResult;
+import com.espacepiins.messsenger.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +29,8 @@ public class ContactActivity extends AppCompatActivity implements ContactListFra
     public static final int NO_CONTACT_SELECTED = 0x100;
     public static final int CONTACT_SELECTED = 0x200;
     public static final int INVITE_CONTACT = 0x300;
+    public static final String EXTRA_EMAIL = "emailAddress";
+    public static final String EXTRA_FIREBASE_UID = "firebase_uid";
 
     @BindView(R.id.contact_toolbar)
     Toolbar mToolbar;
@@ -75,9 +77,10 @@ public class ContactActivity extends AppCompatActivity implements ContactListFra
             action = INVITE_CONTACT;
         }
 
+        resultIntent.putExtra("action", action);
+
         if (action == CONTACT_SELECTED) {
-            resultIntent.putExtra("emailAddress", item.getEmailAddresses().get(0).getEmailAddress());
-            resultIntent.putExtra("action", action);
+            resultIntent.putExtra(EXTRA_FIREBASE_UID, item.getFirebaseUID());
             setResult(Activity.RESULT_OK, resultIntent);
             finish();
         } else {

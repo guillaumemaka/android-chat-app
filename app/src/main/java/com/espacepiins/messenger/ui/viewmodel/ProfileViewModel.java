@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.espacepiins.messenger.application.FirebaseRefs;
 import com.espacepiins.messenger.model.Profile;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -30,9 +31,9 @@ public final class ProfileViewModel extends AndroidViewModel implements ValueEve
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
-            this.mDatabaseReference = FirebaseDatabase.getInstance().getReference("profiles/" + currentUser.getUid());
+            this.mDatabaseReference = FirebaseDatabase.getInstance().getReference(FirebaseRefs.USER_PROFILES_REF(currentUser.getUid()));
             this.mDatabaseReference.addValueEventListener(this);
-            this.mStorageReference = FirebaseStorage.getInstance().getReference("user-avatar");
+            this.mStorageReference = FirebaseStorage.getInstance().getReference(FirebaseRefs.USERS_AVATAR_STORAGE);
         }
     }
 

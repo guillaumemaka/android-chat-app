@@ -6,7 +6,7 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -19,6 +19,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -26,37 +27,30 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.espacepiins.messenger.R;
-import com.espacepiins.messenger.db.AppDatabase;
-import com.espacepiins.messenger.db.entity.RoomEntity;
-import com.espacepiins.messenger.model.Contact;
+import com.espacepiins.messenger.job.UserFetcherJob;
+import com.espacepiins.messenger.model.Profile;
 import com.espacepiins.messenger.model.Room;
 import com.espacepiins.messenger.service.ContactImportReceiver;
 import com.espacepiins.messenger.service.ContactImportService;
 import com.espacepiins.messenger.ui.viewmodel.AppViewModel;
+import com.espacepiins.messenger.ui.viewmodel.ProfileViewModel;
 import com.espacepiins.messenger.ui.viewmodel.RoomListViewModel;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
+import com.espacepiins.messsenger.R;
+import com.firebase.jobdispatcher.FirebaseJobDispatcher;
 
 import butterknife.BindBool;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class RoomActivity extends FirebaseAuthAwareActivity implements OnMapReadyCallback, RoomListFragment.OnRoomInteractionListener {
+public class RoomActivity extends FirebaseAuthAwareActivity implements RoomListFragment.OnRoomInteractionListener {
     private final String TAG = RoomActivity.class.getName();
-    private static final int READ_CONTACTS_REQUEST_CODE = 0x001;
+    private static final int SETUP_READ_CONTACTS_REQUEST_CODE = 0x001;
+    private static final int NEW_CONVERSATION_READ_CONTACTS_REQUEST_CODE = 0x002;
     private static final int REQUEST_CONTACT_NEW_CONVERSATION_CODE = 0x002;
     private AppViewModel mAppViewModel;
     private RoomListViewModel mRoomListViewModel;
-    private RoomsListQueryListener mRoomsListQueryListener;
+    private Profile mProfile;
 
     @BindView(R.id.pager)
     ViewPager mViewPager;
@@ -76,13 +70,11 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements OnMapRead
     @BindView(R.id.searchView)
     TextView mSearchView;
 
-    ContactImportReceiver mContactImportReceiver;
-    SupportMapFragment mMapFragment;
-    Fragment mRoomList;
+    private ContactImportReceiver mContactImportReceiver;
+    private FriendsMapFragment mMapFragment;
+    private Fragment mRoomList;
 
-
-    GoogleMap mMap;
-    private Query mQuery;
+    private FirebaseJobDispatcher mFirebaseJobDispatcher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,19 +90,16 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements OnMapRead
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setDisplayShowCustomEnabled(true);
 
-        mMapFragment = new SupportMapFragment();
+        mMapFragment = new FriendsMapFragment();
         mRoomList = new RoomListFragment();
 
-        mMapFragment.getMapAsync(this);
         mViewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager()));
         mTabLayout.setupWithViewPager(mViewPager);
         mContactImportReceiver = new ContactImportReceiver();
 
-        if (!hasPermission(Manifest.permission.READ_CONTACTS)) {
-            requestContactPermission();
-        }
-
         initViewModels();
+
+        mFirebaseJobDispatcher = UserFetcherJob.createJob(this);
     }
 
     private void initViewModels() {
@@ -137,23 +126,24 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements OnMapRead
                     R.string.snackbar_contact_import_messasge,
                         Snackbar.LENGTH_INDEFINITE
                     );
-            snackbar.setAction(R.string.string_snackbar_import_action, new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    ContactImportService.startActionContactImport(RoomActivity.this);
-                    snackbar.dismiss();
-                }
+            snackbar.setAction(R.string.string_snackbar_import_action, view -> {
+                ContactImportService.startActionContactImport(RoomActivity.this);
+                snackbar.dismiss();
             });
         }
-    }
 
-    private void initRoomsListener(){
-        mQuery = FirebaseDatabase.getInstance().getReference(String.format("users/%s/rooms", FirebaseAuth.getInstance().getCurrentUser().getUid()));
-        mRoomsListQueryListener = new RoomsListQueryListener();
+        final ProfileViewModel profileViewModel = ViewModelProviders.of(this).get(ProfileViewModel.class);
+        profileViewModel.getProfileData().observe(this, new Observer<Profile>() {
+            @Override
+            public void onChanged(@Nullable Profile profile) {
+                mProfile = profile;
+            }
+        });
     }
 
     @Override
     protected void onResume() {
+        super.onResume();
         if(mContactImportReceiver != null){
             IntentFilter filter = new IntentFilter(ContactImportReceiver.CONTACT_IMPORTED_ACTION);
             this.registerReceiver(mContactImportReceiver, filter);
@@ -164,11 +154,11 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements OnMapRead
 //            initRoomsListener();
 //        }
 
-        super.onResume();
     }
 
     @Override
     protected void onPause() {
+        super.onPause();
         if(mContactImportReceiver != null){
             this.unregisterReceiver(mContactImportReceiver);
             Log.d(TAG, "onPause() - ContactImportReceiver unregistered!");
@@ -178,7 +168,31 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements OnMapRead
 //            mQuery.removeEventListener(mRoomsListQueryListener);
 //        }
 
-        super.onPause();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (mFirebaseJobDispatcher == null) {
+            mFirebaseJobDispatcher = UserFetcherJob.createJob(this);
+        }
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+
+        if (mFirebaseJobDispatcher == null) {
+            mFirebaseJobDispatcher = UserFetcherJob.createJob(this);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mFirebaseJobDispatcher != null) {
+            mFirebaseJobDispatcher.cancel(UserFetcherJob.JOB_TAG);
+        }
     }
 
     @Override
@@ -199,15 +213,18 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements OnMapRead
         if (requestCode == REQUEST_CONTACT_NEW_CONVERSATION_CODE) {
             if (resultCode == RESULT_OK) {
                 int action = data.getIntExtra("action", 0);
-                Contact selectedContact = data.getParcelableExtra("contact");
+
                 switch (action) {
                     case ContactActivity.CONTACT_SELECTED:
+                        String firebaseUID = data.getStringExtra(ContactActivity.EXTRA_FIREBASE_UID);
                         // 1: Create a new room
-                        createConversation(selectedContact);
+                        createConversation(firebaseUID);
                         break;
                     case ContactActivity.INVITE_CONTACT:
+                        String contactEmail = data.getStringExtra(ContactActivity.EXTRA_EMAIL);
+                        String contactDisplayname = data.getStringExtra("displayName");
                         // 1: Invite contact to download the application
-                        inviteContact(selectedContact);
+                        inviteContact(contactDisplayname, contactEmail);
                         break;
                     case ContactActivity.NO_CONTACT_SELECTED:
                         break;
@@ -220,20 +237,34 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements OnMapRead
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    public void inviteContact(Contact contact) {
-        Log.i(TAG, "inviteContact() " + contact);
+    private void inviteContact(String contactDisplayname, String contactEmail) {
+        Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", contactEmail, null));
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Viens discuter su PiinsMessenger!");
+        emailIntent.putExtra(Intent.EXTRA_TEXT, "%s vous invites à rejoindre PiinsMessenger\nCopiez ce lien dans votre navigateur pour installer l'application %s");
+        emailIntent.putExtra(Intent.EXTRA_HTML_TEXT, Html.fromHtml(new StringBuilder()
+                .append("<p><b>").append(contactDisplayname).append("</b>").append(" vous invites à rejoindre PiinsMessenger.").append("</p>")
+                .append("<p>").append("Cliquez sur ce lien pour installer l'application")
+                .append("<a>").append(getString(R.string.internal_test_dynamic_link)).append("</a>")
+                .append("</p>")
+                .toString()));
+
+        startActivity(Intent.createChooser(emailIntent, "Envoyer une invitation"));
     }
 
-    public void createConversation(Contact contact) {
-        String roomKey = mRoomListViewModel.createRoom(FirebaseAuth.getInstance().getCurrentUser().getUid(), contact.getFirebaseUID());
-        Log.i(TAG, "createConversation() " + contact);
-    }
+    public void createConversation(String contactUID) {
+        mRoomListViewModel.createRoom(mProfile, contactUID, new RoomListViewModel.OnRoomCreated() {
+            @Override
+            public void onSuccess(String roomKey) {
 
-    @Override
-    public void onMapReady(final GoogleMap googleMap) {
-        mMap = googleMap;
-    }
+            }
 
+            @Override
+            public void onFailure(Exception exception) {
+                Log.w(TAG, "createConversation() onFailure: " + exception.getMessage(), exception);
+            }
+        });
+
+    }
 
     @OnClick(R.id.searchView)
     public void onSearchViewClick(View view){
@@ -244,13 +275,15 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements OnMapRead
 
     @OnClick(R.id.profife_avatar_button)
     public void onProfileAvatarImageButtonClick(View imageButton) {
+        Intent intent = new Intent(this, ProfileActivity.class);
+        startActivity(intent);
         Log.d(TAG, "onProfileAvatarImageButtonClick clicked!");
     }
 
     @OnClick(R.id.floatingActionButton)
     public void onFloatingActionButtonClick(View button) {
         Log.d(TAG, "onFloatingActionButtonClick clicked!");
-        newConversation();
+        requestContactPermission(NEW_CONVERSATION_READ_CONTACTS_REQUEST_CODE);
     }
 
     private void newConversation(){
@@ -266,22 +299,25 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements OnMapRead
         return checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
     }
 
-    private void requestContactPermission() {
+    private void requestContactPermission(int requestCode) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if(shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS))
                     Toast.makeText(this, R.string.read_contacts_permission_rational_message_hint, Toast.LENGTH_LONG)
                             .show();
 
-            requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, READ_CONTACTS_REQUEST_CODE);
+            requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, requestCode);
+            return;
         }
+
+        dispatchActionForPermissionRequestCode(requestCode);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if(requestCode == READ_CONTACTS_REQUEST_CODE){
+        if (requestCode == SETUP_READ_CONTACTS_REQUEST_CODE || requestCode == NEW_CONVERSATION_READ_CONTACTS_REQUEST_CODE) {
             if(grantResults.length > 0){
                 if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                    ContactImportService.startActionContactImport(this);
+                    dispatchActionForPermissionRequestCode(requestCode);
                 }
             }
         } else {
@@ -289,8 +325,19 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements OnMapRead
         }
     }
 
+    private void dispatchActionForPermissionRequestCode(int requestCode) {
+        ContactImportService.startActionContactImport(this);
+        switch (requestCode) {
+            case NEW_CONVERSATION_READ_CONTACTS_REQUEST_CODE:
+                newConversation();
+                break;
+            default:
+                break;
+        }
+    }
+
     @Override
-    public void onRoomSelected(RoomEntity room) {
+    public void onRoomSelected(Room room) {
         Toast.makeText(this, "Implementation dans le livrable 3!!!", Toast.LENGTH_LONG)
                 .show();
     }
@@ -330,59 +377,6 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements OnMapRead
                     return getString(R.string.tablayout_tab_discover_title);
             }
             return "";
-        }
-    }
-
-    public class RoomsListQueryListener implements ChildEventListener{
-        @Override
-        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            final Room room = dataSnapshot.getValue(Room.class);
-            final RoomEntity roomEntity = RoomEntity.fromFirebaseObject(room);
-            new AsyncTask<RoomEntity, Void, Void>(){
-                @Override
-                protected Void doInBackground(RoomEntity... roomEntities) {
-                    AppDatabase.getInstance(getApplication())
-                            .roomDao().insert(roomEntities[0]);
-                    return null;
-                }
-            }.execute(roomEntity);
-        }
-
-        @Override
-        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-            final Room room = dataSnapshot.getValue(Room.class);
-            final RoomEntity roomEntity = RoomEntity.fromFirebaseObject(room);
-            new AsyncTask<RoomEntity, Void, Void>(){
-                @Override
-                protected Void doInBackground(RoomEntity... roomEntities) {
-                    AppDatabase.getInstance(getApplication())
-                            .roomDao().update(roomEntities[0]);
-                    return null;
-                }
-            }.execute(roomEntity);
-        }
-
-        @Override
-        public void onChildRemoved(DataSnapshot dataSnapshot) {
-            final Room room = dataSnapshot.getValue(Room.class);
-            new AsyncTask<String, Void, Void>(){
-                @Override
-                protected Void doInBackground(String... roomEntities) {
-                    AppDatabase.getInstance(getApplication())
-                            .roomDao().delete(roomEntities[0]);
-                    return null;
-                }
-            }.execute(room.getRoomUID());
-        }
-
-        @Override
-        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-            Log.d(TAG, "onChildMoved: " + dataSnapshot.getKey());
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-            Log.w(TAG, "onCancelled", databaseError.toException());
         }
     }
 }

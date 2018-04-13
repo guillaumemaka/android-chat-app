@@ -63,6 +63,7 @@ android {
         testRunnerVersion = "1.0.1"
         espressoVersion = "3.0.1"
         crashlyticsVersion = "2.9.0@aar"
+        jobdispatcherVersion = "0.8.5"
     }
 }
 
@@ -87,6 +88,8 @@ dependencies {
     implementation "com.google.firebase:firebase-auth:$fireBaseVersion"
     implementation "com.google.firebase:firebase-database:$fireBaseVersion"
     implementation "com.google.firebase:firebase-storage:$fireBaseVersion"
+    implementation "com.google.firebase:firebase-invites:$fireBaseVersion"
+    implementation "com.firebase:firebase-jobdispatcher:$jobdispatcherVersion"
     implementation("com.crashlytics.sdk.android:crashlytics:$crashlyticsVersion") {
         transitive = true
     }

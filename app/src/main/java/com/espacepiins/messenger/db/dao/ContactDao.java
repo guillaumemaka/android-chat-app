@@ -41,10 +41,16 @@ public interface ContactDao {
     @Transaction
     List<SearchContactResult> search(String term);
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Query("SELECT c.lookup_key, display_name, firebase_uid, photo_thumbnail_uri " +
+            "FROM contacts c " +
+            "WHERE coalesce(c.firebase_uid, '') = ''")
+    @Transaction
+    List<SearchContactResult> getUnregisteredContacts();
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insertContacts(ContactEntity... contacts);
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insertContacts(List<ContactEntity> contacts);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

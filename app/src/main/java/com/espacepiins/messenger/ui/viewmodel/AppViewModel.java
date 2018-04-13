@@ -6,8 +6,8 @@ import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import com.espacepiins.messenger.R;
 import com.espacepiins.messenger.application.ConstantsPreferences;
+import com.espacepiins.messsenger.R;
 
 /**
  * Created by guillaume on 18-03-17.

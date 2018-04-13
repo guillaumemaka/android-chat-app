@@ -10,12 +10,12 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.Patterns;
 
-import com.espacepiins.messenger.BuildConfig;
-import com.espacepiins.messenger.R;
 import com.espacepiins.messenger.db.AppDatabase;
 import com.espacepiins.messenger.db.entity.ContactEntity;
 import com.espacepiins.messenger.db.entity.EmailEntity;
 import com.espacepiins.messenger.db.entity.PhoneEntity;
+import com.espacepiins.messsenger.BuildConfig;
+import com.espacepiins.messsenger.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,12 +96,6 @@ public class ContactImportService extends IntentService {
      */
     private void handleActionContactImport() {
         AppDatabase db = AppDatabase.getInstance(getApplicationContext());
-
-        if(BuildConfig.DEBUG){
-            db.contactDao().deleteAllContacts();
-            db.contactDao().deleteAllEmails();
-            db.contactDao().deleteAllPhones();
-        }
 
         Log.i(TAG, "handleActionContactImport");
         ContentResolver contentResolver = getContentResolver();

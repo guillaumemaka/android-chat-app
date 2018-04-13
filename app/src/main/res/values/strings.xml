@@ -50,4 +50,8 @@
     <string name="email_type_label_mobile">Cellulaire</string>
     <string name="email_type_label_work">Travail</string>
     <string name="type_label_other">Autre</string>
+    <string name="app_link">https://piinsmessenger.com</string>
+    <string name="app_alpha_playstore_url"></string>
+    <string name="dynamic_link_domain"></string>
+    <string name="internal_test_dynamic_link">https://x6ebw.app.goo.gl/wtQ4</string>
 </resources>

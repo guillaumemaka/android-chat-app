@@ -1,13 +1,11 @@
 package com.espacepiins.messenger.ui;
 
 import android.content.Intent;
-import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.espacepiins.messenger.util.FirebaseUtil;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -18,30 +16,33 @@ import com.google.firebase.auth.FirebaseUser;
 public class FirebaseAuthAwareActivity extends AppCompatActivity implements FirebaseAuth.AuthStateListener {
     private final String TAG = FirebaseAuthAwareActivity.class.getName();
 
+    protected FirebaseUser mCurrentUser;
+
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
-        super.onCreate(savedInstanceState, persistentState);
-        listenOnUserDisconnect();
+    protected void onStart() {
+        listenOnUserSignout();
+        super.onStart();
     }
 
     @Override
     protected void onPause() {
-        unListenOnUserDisconnect();
+        unListenOnUserSignout();
         super.onPause();
     }
 
     @Override
-    protected void onResume() {
-        listenOnUserDisconnect();
-        super.onResume();
+    protected void onStop() {
+        unListenOnUserSignout();
+        super.onStop();
     }
 
-    private void listenOnUserDisconnect(){
+    private void listenOnUserSignout() {
         Log.d(TAG, "listenOnUserDisconnect");
+        mCurrentUser = FirebaseAuth.getInstance().getCurrentUser();
         FirebaseAuth.getInstance().addAuthStateListener(this);
     }
 
-    private void unListenOnUserDisconnect(){
+    private void unListenOnUserSignout() {
         Log.d(TAG, "unListenOnUserDisconnect");
         FirebaseAuth.getInstance().removeAuthStateListener(this);
     }
@@ -49,11 +50,13 @@ public class FirebaseAuthAwareActivity extends AppCompatActivity implements Fire
     @Override
     public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
         Log.d(TAG, "onAuthStateChanged");
-        FirebaseUser user = firebaseAuth.getCurrentUser();
-        if(user == null){
+        mCurrentUser = firebaseAuth.getCurrentUser();
+        if (mCurrentUser == null) {
             Intent authIntent = new Intent(this, AuthActivity.class);
             startActivity(authIntent);
             finish();
+        } else {
+            FirebaseUtil.setConnected(true);
         }
     }
 }

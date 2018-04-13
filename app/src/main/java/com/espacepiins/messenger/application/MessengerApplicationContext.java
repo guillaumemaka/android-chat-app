@@ -1,11 +1,12 @@
 package com.espacepiins.messenger.application;
 
 import android.app.Application;
+import android.arch.lifecycle.ProcessLifecycleOwner;
 
 import com.crashlytics.android.Crashlytics;
-import com.espacepiins.messenger.BuildConfig;
 import com.espacepiins.messenger.db.AppDatabase;
 import com.espacepiins.messenger.ui.viewmodel.AppViewModel;
+import com.espacepiins.messsenger.BuildConfig;
 import com.facebook.stetho.Stetho;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -34,6 +35,8 @@ public class MessengerApplicationContext extends Application {
         if(BuildConfig.ENABLE_CRASHLYTICS){
             Fabric.with(this, new Crashlytics());
         }
+
+        ProcessLifecycleOwner.get().getLifecycle().addObserver(new ApplicationLifectcleOwner());
     }
 
     public AppDatabase getAppDatabaseInstance(){

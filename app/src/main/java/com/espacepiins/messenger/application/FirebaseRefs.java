@@ -19,31 +19,38 @@ public final class FirebaseRefs {
     public final static String REGISTERED_USERS_REF = "registered-users";
 
     /**
-     * Ex: rooms/$roomuid
+     * Ex: rooms/$userUID/$roomuid
      * Return:
      * {
      *     from: uid,
-     *     to: uid
+     *     fromDisplayname,
+     *     to: uid,
+     *     toDisplayname
      *     lastMessageUID: "bxvbhjyedfasdfadf00adsf",
      *     lastMessage: "Hi!",
      *     lastMessageTimestamp: 1324444445
-     *     displayName: "John Doe",
      *     createdAt: 1324444445
      * }
      */
-    public final static String ROOMS_REF = "rooms";
+    public final static String ROOMS_REF(String userUID) {
+        return String.format("rooms/%s", userUID);
+    }
 
     /**
      * Ex: messages/$roomuid/$messageKey
      * Return:
      * {
+     *     roomUID: "adsfasgggggsfg",
      *     content: "Hi!",
      *     content_type: "plain/text",
-     *     sender: uid,
+     *     from: uid,
+     *     to: uid,
      *     sentAt: 13212213415
      * }
      */
-    public final static String MESSAGES_REF = "messages";
+    public final static String MESSAGES_REF(String roomUID) {
+        return String.format("messages/%s", roomUID);
+    }
 
     /**
      * Ex: profiles/$uuid
@@ -57,19 +64,24 @@ public final class FirebaseRefs {
      *     createdAt: 1324444445
      * }
      */
-    public final static String USER_PROFILES_REF = "profiles";
+    public final static String USER_PROFILES_REF(String userUID) {
+        return String.format("profiles/%s", userUID);
+    }
 
     /**
-     * Ex: .connected-users/$uid/connected (connected return a boolean)
+     * Ex: users/$uid/connected (connected return a boolean)
      */
-    public final static String USERS_PRESENCE_REF = ".connected-users";
+    public final static String USERS_PRESENCE_REF(String userUID) {
+        return String.format("users/%s/lastOnline", userUID);
+    }
 
     /**
-     * Ex: .stats/$uid
-     * Return:
-     * {
-     *     lastSeen: 123134551235
-     * }
+     * Ex: users/$uid/lastOnline
+     * Return: Boolean
      */
-    public final static String USER_STATS_REF = ".stats";
+    public final static String USER_LAST_ONLINE_REF(String userUID) {
+        return String.format("users/%s/lastOnline", userUID);
+    }
+
+    public final static String USERS_AVATAR_STORAGE = "user-avatar";
 }

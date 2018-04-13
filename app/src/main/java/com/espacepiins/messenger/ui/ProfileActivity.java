@@ -2,28 +2,22 @@ package com.espacepiins.messenger.ui;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
-import android.databinding.BindingAdapter;
 import android.databinding.BindingMethod;
 import android.databinding.BindingMethods;
 import android.databinding.DataBindingUtil;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
 
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
-import com.espacepiins.messenger.application.GlideApp;
 import com.espacepiins.messenger.model.Profile;
 import com.espacepiins.messenger.ui.viewmodel.ProfileViewModel;
-import com.espacepiins.messenger.util.GravatarUtil;
+import com.espacepiins.messenger.util.FirebaseUtil;
 import com.espacepiins.messsenger.R;
 import com.espacepiins.messsenger.databinding.ActivityProfileBinding;
 import com.google.firebase.auth.FirebaseAuth;
@@ -48,7 +42,7 @@ import butterknife.OnClick;
         @BindingMethod(type = android.support.design.widget.FloatingActionButton.class,
                 attribute = "app:backgroundTint",
                 method = "setBackgroundTintList")})
-public class ProfileActivity extends AppCompatActivity implements IPickResult {
+public class ProfileActivity extends FirebaseAuthAwareActivity implements IPickResult {
     private static final String TAG = ProfileActivity.class.getName();
 
     private ActivityProfileBinding mActivityProfileBinding;
@@ -91,6 +85,8 @@ public class ProfileActivity extends AppCompatActivity implements IPickResult {
                 NavUtils.navigateUpFromSameTask(this);
                 return true;
             case R.id.action_signout:
+                FirebaseUtil.setConnected(false);
+                FirebaseAuth.getInstance().signOut();
                 Log.d(TAG, "Signout called!");
                 return false;
         }
@@ -269,26 +265,5 @@ public class ProfileActivity extends AppCompatActivity implements IPickResult {
                 ext = parts[parts.length - 1];
         }
         return ext;
-    }
-
-    @BindingAdapter({"bind:imageUrl", "bind:fallbackDrawable", "bind:gravatar"})
-    public static void loadImageUrl(ImageView view, String imageUrl, Drawable fallbackDrawable, String email) {
-        Log.i(TAG, "app:imageUrl: " + imageUrl);
-        String url = imageUrl;
-
-        if (url == null) {
-            int size = (int) view.getResources().getDimension(R.dimen.profile_avatar_view);
-            url = GravatarUtil.getGravatar(email, size);
-            Log.i(TAG, "Gravatar: " + url + " Email: " + email);
-        }
-
-        GlideApp.with(view)
-                .load(url)
-                .centerCrop()
-                .circleCrop()
-                .transition(DrawableTransitionOptions.withCrossFade())
-                .placeholder(fallbackDrawable)
-                .fallback(fallbackDrawable)
-                .into(view);
     }
 }
