@@ -41,9 +41,9 @@ public interface ContactDao {
     @Transaction
     List<SearchContactResult> search(String term);
 
-    @Query("SELECT c.lookup_key, display_name, firebase_uid, photo_thumbnail_uri " +
+    @Query("SELECT c.lookup_key, c.display_name, c.firebase_uid, c.photo_thumbnail_uri " +
             "FROM contacts c " +
-            "WHERE coalesce(c.firebase_uid, '') = ''")
+            "WHERE c.firebase_uid is null or c.firebase_uid = ''")
     @Transaction
     List<SearchContactResult> getUnregisteredContacts();
 

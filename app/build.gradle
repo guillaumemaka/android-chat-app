@@ -64,6 +64,7 @@ android {
         espressoVersion = "3.0.1"
         crashlyticsVersion = "2.9.0@aar"
         jobdispatcherVersion = "0.8.5"
+        geofireVersion = "2.3.1"
     }
 }
 
@@ -94,8 +95,12 @@ dependencies {
         transitive = true
     }
 
+    // GeoFire
+    implementation "com.firebase:geofire-android:$geofireVersion"
+
     // Google Play Service
     implementation "com.google.android.gms:play-services-maps:$fireBaseVersion"
+    implementation "com.google.android.gms:play-services-location:$fireBaseVersion"
 
     // Glide v4
     implementation "com.github.bumptech.glide:glide:$glideVersion"

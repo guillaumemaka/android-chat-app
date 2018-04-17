@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
@@ -24,7 +23,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class ContactActivity extends AppCompatActivity implements ContactListFragment.OnListFragmentInteractionListener {
+public class ContactActivity extends FirebaseAuthAwareActivity implements ContactListFragment.OnListFragmentInteractionListener {
     private final String TAG = ContactActivity.class.getName();
     public static final int NO_CONTACT_SELECTED = 0x100;
     public static final int CONTACT_SELECTED = 0x200;

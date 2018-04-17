@@ -6,12 +6,12 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -36,6 +36,7 @@ import com.espacepiins.messenger.ui.viewmodel.AppViewModel;
 import com.espacepiins.messenger.ui.viewmodel.ProfileViewModel;
 import com.espacepiins.messenger.ui.viewmodel.RoomListViewModel;
 import com.espacepiins.messsenger.R;
+import com.espacepiins.messsenger.databinding.ActivityRoomBinding;
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
 
 import butterknife.BindBool;
@@ -75,12 +76,16 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements RoomListF
     private Fragment mRoomList;
 
     private FirebaseJobDispatcher mFirebaseJobDispatcher;
+    private ActivityRoomBinding mActivityRoomBinding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_room);
-        ButterKnife.bind(this);
+
+        mActivityRoomBinding = DataBindingUtil.setContentView(this, R.layout.activity_room);
+
+        ButterKnife.bind(this, mActivityRoomBinding.getRoot());
 
         setSupportActionBar(mToolbar);
 
@@ -105,38 +110,13 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements RoomListF
     private void initViewModels() {
         mAppViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
         mRoomListViewModel = ViewModelProviders.of(this).get(RoomListViewModel.class);
-        mAppViewModel.isContactLoaded().observe(this, new Observer<Boolean>() {
-            @Override
-            public void onChanged(@Nullable Boolean loaded) {
-                if(loaded){
-                    Snackbar.make(mViewPager,
-                            R.string.snackbar_contact_import_done_message,
-                            Snackbar.LENGTH_SHORT
-                    ).show();
-
-                    Log.i(TAG, "Contacts imported !!!");
-                }
-
-            }
-        });
-
-
-        if(mAppViewModel.isContactLoaded().getValue() == false){
-            final Snackbar snackbar = Snackbar.make(mViewPager,
-                    R.string.snackbar_contact_import_messasge,
-                        Snackbar.LENGTH_INDEFINITE
-                    );
-            snackbar.setAction(R.string.string_snackbar_import_action, view -> {
-                ContactImportService.startActionContactImport(RoomActivity.this);
-                snackbar.dismiss();
-            });
-        }
 
         final ProfileViewModel profileViewModel = ViewModelProviders.of(this).get(ProfileViewModel.class);
         profileViewModel.getProfileData().observe(this, new Observer<Profile>() {
             @Override
             public void onChanged(@Nullable Profile profile) {
                 mProfile = profile;
+                mActivityRoomBinding.setProfile(profile);
             }
         });
     }

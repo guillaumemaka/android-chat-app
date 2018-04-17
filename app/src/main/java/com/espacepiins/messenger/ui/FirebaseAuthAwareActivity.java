@@ -1,7 +1,9 @@
 package com.espacepiins.messenger.ui;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
@@ -13,10 +15,18 @@ import com.google.firebase.auth.FirebaseUser;
  * Created by guillaume on 18-03-22.
  */
 
-public class FirebaseAuthAwareActivity extends AppCompatActivity implements FirebaseAuth.AuthStateListener {
+public abstract class FirebaseAuthAwareActivity extends AppCompatActivity implements FirebaseAuth.AuthStateListener {
     private final String TAG = FirebaseAuthAwareActivity.class.getName();
 
     protected FirebaseUser mCurrentUser;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        this.mCurrentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (mCurrentUser == null)
+            goToAuth();
+    }
 
     @Override
     protected void onStart() {
@@ -52,11 +62,15 @@ public class FirebaseAuthAwareActivity extends AppCompatActivity implements Fire
         Log.d(TAG, "onAuthStateChanged");
         mCurrentUser = firebaseAuth.getCurrentUser();
         if (mCurrentUser == null) {
-            Intent authIntent = new Intent(this, AuthActivity.class);
-            startActivity(authIntent);
-            finish();
+            goToAuth();
         } else {
             FirebaseUtil.setConnected(true);
         }
+    }
+
+    protected void goToAuth() {
+        Intent authIntent = new Intent(this, AuthActivity.class);
+        startActivity(authIntent);
+        finish();
     }
 }

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+    >
+
+    <ImageView
+        android:id="@+id/map_avatar"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/avatar_size_extra_small"
+        android:layout_margin="5dp"
+        android:layout_weight="1"
+        android:background="@drawable/gmap_marker_bg_circle"
+        android:maxHeight="@dimen/avatar_size_extra_small"
+        android:maxWidth="@dimen/avatar_size_extra_small"
+        android:minHeight="@dimen/avatar_size_extra_small"
+        android:minWidth="@dimen/avatar_size_extra_small"/>
+
+</LinearLayout>

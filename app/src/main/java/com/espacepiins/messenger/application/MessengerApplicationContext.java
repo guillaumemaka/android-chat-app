@@ -36,7 +36,7 @@ public class MessengerApplicationContext extends Application {
             Fabric.with(this, new Crashlytics());
         }
 
-        ProcessLifecycleOwner.get().getLifecycle().addObserver(new ApplicationLifectcleOwner());
+        ProcessLifecycleOwner.get().getLifecycle().addObserver(new ApplicationLifecycleOwner());
     }
 
     public AppDatabase getAppDatabaseInstance(){

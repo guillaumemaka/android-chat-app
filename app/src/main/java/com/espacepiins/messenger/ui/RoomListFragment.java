@@ -1,6 +1,5 @@
 package com.espacepiins.messenger.ui;
 
-import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.databinding.DataBindingUtil;
@@ -66,6 +65,7 @@ public class RoomListFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView");
         View view = inflater.inflate(R.layout.room_list_fragment_layout, container, false);
         ButterKnife.bind(this, view);
 
@@ -77,23 +77,24 @@ public class RoomListFragment extends Fragment {
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mAdapter);
 
-        mRoomListViewModel = ViewModelProviders.of(this.getActivity()).get(RoomListViewModel.class);
-
-        mRoomListViewModel.getRooms(mCurrentUser.getUid()).observe(this.getActivity(), new Observer<List<Room>>() {
-            @Override
-            public void onChanged(@Nullable List<Room> rooms) {
-                mAdapter.setRooms(rooms);
-                if (rooms.size() == 0) {
-                    mRecyclerView.setVisibility(View.GONE);
-                    mEmptyView.setVisibility(View.VISIBLE);
-                } else {
-                    mRecyclerView.setVisibility(View.VISIBLE);
-                    mEmptyView.setVisibility(View.GONE);
-                }
-            }
-        });
+        mRoomListViewModel = ViewModelProviders.of(this).get(RoomListViewModel.class);
 
         return view;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mRoomListViewModel.getRooms().observe(this.getActivity(), rooms -> {
+            mAdapter.setRooms(rooms);
+            if (rooms.size() == 0) {
+                mRecyclerView.setVisibility(View.GONE);
+                mEmptyView.setVisibility(View.VISIBLE);
+            } else {
+                mRecyclerView.setVisibility(View.VISIBLE);
+                mEmptyView.setVisibility(View.GONE);
+            }
+        });
     }
 
     @Override
