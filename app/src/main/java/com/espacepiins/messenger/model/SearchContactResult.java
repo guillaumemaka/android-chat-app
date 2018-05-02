@@ -4,7 +4,6 @@ import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Relation;
 
 import com.espacepiins.messenger.db.entity.EmailEntity;
-import com.espacepiins.messenger.db.entity.PhoneEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +23,8 @@ public class SearchContactResult  {
     private String photoThumbnailUri;
     @Relation(parentColumn = "lookup_key", entityColumn = "contact_lookup_key")
     private List<EmailEntity> emailAddresses;
-    @Relation(parentColumn = "lookup_key", entityColumn = "contact_lookup_key")
-    private List<PhoneEntity> phoneNumbers;
+//    @Relation(parentColumn = "lookup_key", entityColumn = "contact_lookup_key")
+//    private List<PhoneEntity> phoneNumbers;
 
     public SearchContactResult() {
     }
@@ -70,13 +69,13 @@ public class SearchContactResult  {
         this.emailAddresses = emailAddresses;
     }
 
-    public List<PhoneEntity> getPhoneNumbers() {
-        return phoneNumbers;
-    }
-
-    public void setPhoneNumbers(List<PhoneEntity> phoneNumbers) {
-        this.phoneNumbers = phoneNumbers;
-    }
+//    public List<PhoneEntity> getPhoneNumbers() {
+//        return phoneNumbers;
+//    }
+//
+//    public void setPhoneNumbers(List<PhoneEntity> phoneNumbers) {
+//        this.phoneNumbers = phoneNumbers;
+//    }
 
     public List<String> getEmails(){
         final List<String> emails = new ArrayList<>();

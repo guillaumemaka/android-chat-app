@@ -7,7 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.espacepiins.messsenger.BR;
+import com.espacepiins.messenger.BR;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;

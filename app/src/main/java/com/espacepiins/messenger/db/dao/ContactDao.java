@@ -29,15 +29,15 @@ public interface ContactDao {
     @Query("SELECT * from contacts")
     List<ContactEntity> getAll();
 
-    @Query("SELECT c.lookup_key, display_name, firebase_uid, photo_thumbnail_uri " +
+    @Query("SELECT c.lookup_key, c.display_name, firebase_uid, photo_thumbnail_uri " +
             "FROM contacts c " +
-            "INNER JOIN phone_numbers p ON p.contact_lookup_key = c.lookup_key " +
+//            "INNER JOIN phone_numbers p ON p.contact_lookup_key = c.lookup_key " +
             "INNER JOIN email_addresses e ON e.contact_lookup_key = c.lookup_key " +
-            "WHERE e.email_address LIKE '%' || :term || '%' " +
-            "OR p.phone_number LIKE '%' || :term || '%' " +
-            "OR c.display_name LIKE '%' || :term || '%' " +
+            "WHERE c.display_name LIKE '%' || :term || '%' " +
+            "OR e.email_address LIKE '%' || :term || '%' " +
+//            "OR c.display_name LIKE '%' || :term || '%' " +
             "GROUP BY c.lookup_key " +
-            "ORDER BY display_name")
+            "ORDER BY c.display_name")
     @Transaction
     List<SearchContactResult> search(String term);
 
@@ -47,10 +47,10 @@ public interface ContactDao {
     @Transaction
     List<SearchContactResult> getUnregisteredContacts();
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.FAIL)
     void insertContacts(ContactEntity... contacts);
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.FAIL)
     void insertContacts(List<ContactEntity> contacts);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

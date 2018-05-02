@@ -1,5 +1,7 @@
 package com.espacepiins.messenger.model;
 
+import android.support.annotation.NonNull;
+
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 
@@ -11,9 +13,9 @@ import java.util.Map;
  * Created by guillaume on 18-03-24.
  */
 @IgnoreExtraProperties
-public class Message {
+public class Message implements Comparable<Message> {
     private String roomId;
-    private String from;
+    private String sender;
     private String to;
     private String content;
     private Long timestamp;
@@ -30,12 +32,12 @@ public class Message {
         this.roomId = roomId;
     }
 
-    public String getFrom() {
-        return from;
+    public String getSender() {
+        return sender;
     }
 
-    public void setFrom(String from) {
-        this.from = from;
+    public void setSender(String sender) {
+        this.sender = sender;
     }
 
     public String getTo() {
@@ -66,10 +68,26 @@ public class Message {
     public Map<String, Object> toMap(){
         final Map<String, Object> values = new HashMap<>();
         values.put("roomId", getRoomId());
+        values.put("sender", getSender());
         values.put("to", getTo());
-        values.put("from", getFrom());
         values.put("content", getContent());
         values.put("timestamp", getTimestamp());
         return values;
+    }
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "roomId='" + roomId + '\'' +
+                ", sender='" + sender + '\'' +
+                ", to='" + to + '\'' +
+                ", content='" + content + '\'' +
+                ", timestamp=" + timestamp +
+                '}';
+    }
+
+    @Override
+    public int compareTo(@NonNull Message o) {
+        return timestamp.compareTo(o.timestamp);
     }
 }

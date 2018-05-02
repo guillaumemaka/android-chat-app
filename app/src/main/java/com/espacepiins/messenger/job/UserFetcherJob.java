@@ -1,6 +1,5 @@
 package com.espacepiins.messenger.job;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -20,6 +19,7 @@ import com.firebase.jobdispatcher.JobService;
 import com.firebase.jobdispatcher.Lifetime;
 import com.firebase.jobdispatcher.RetryStrategy;
 import com.firebase.jobdispatcher.Trigger;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -51,7 +51,10 @@ public class UserFetcherJob extends JobService {
 
     @Override
     public boolean onStartJob(JobParameters job) {
-        Log.i(JOB_TAG, "onStartJob");
+        Log.i(JOB_TAG, "Job Started!");
+
+        if (FirebaseAuth.getInstance().getCurrentUser() == null)
+            return true;
 
         new FetchUserAsyncTask().execute();
 
@@ -79,23 +82,7 @@ public class UserFetcherJob extends JobService {
             registeredUsersRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    @SuppressLint("StaticFieldLeak") final AsyncTask<DataSnapshot, Void, Void> task = new AsyncTask<DataSnapshot, Void, Void>() {
-                        @Override
-                        protected Void doInBackground(DataSnapshot... dataSnapshots) {
-                            for (DataSnapshot snapshot : dataSnapshots[0].getChildren()) {
-                                final Profile profile = snapshot.getValue(Profile.class);
-                                final List<SearchContactResult> results = db.contactDao().search(profile.getEmailAddress());
-                                if (results.size() > 0) {
-                                    Log.i(JOB_TAG, "Found a registered user in contact " + profile);
-                                    final ContactEntity contact = db.contactDao().getByLookupKey(results.get(0).getLookupKey());
-                                    contact.setFirebaseUID(snapshot.getKey());
-                                    db.contactDao().update(contact);
-                                }
-                            }
-                            return null;
-                        }
-                    };
-
+                    final AsyncTask<DataSnapshot, Void, Void> task = new UpdateContactAsyncTask(db);
                     task.execute(dataSnapshot);
                 }
 
@@ -106,6 +93,29 @@ public class UserFetcherJob extends JobService {
             });
 
             return null;
+        }
+
+        private class UpdateContactAsyncTask extends AsyncTask<DataSnapshot, Void, Void> {
+            private final AppDatabase mDb;
+
+            public UpdateContactAsyncTask(AppDatabase db) {
+                mDb = db;
+            }
+
+            @Override
+            protected Void doInBackground(DataSnapshot... dataSnapshots) {
+                for (DataSnapshot snapshot : dataSnapshots[0].getChildren()) {
+                    final Profile profile = snapshot.getValue(Profile.class);
+                    final List<SearchContactResult> results = mDb.contactDao().search(profile.getEmailAddress());
+                    if (results.size() > 0) {
+                        Log.i(JOB_TAG, "Found a registered user in contact " + profile);
+                        final ContactEntity contact = mDb.contactDao().getByLookupKey(results.get(0).getLookupKey());
+                        contact.setFirebaseUID(snapshot.getKey());
+                        mDb.contactDao().update(contact);
+                    }
+                }
+                return null;
+            }
         }
     }
 }

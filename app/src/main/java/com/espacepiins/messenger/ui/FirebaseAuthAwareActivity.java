@@ -30,20 +30,20 @@ public abstract class FirebaseAuthAwareActivity extends AppCompatActivity implem
 
     @Override
     protected void onStart() {
-        listenOnUserSignout();
         super.onStart();
+        listenOnUserSignout();
     }
 
     @Override
     protected void onPause() {
-        unListenOnUserSignout();
         super.onPause();
+        unListenOnUserSignout();
     }
 
     @Override
     protected void onStop() {
-        unListenOnUserSignout();
         super.onStop();
+        unListenOnUserSignout();
     }
 
     private void listenOnUserSignout() {

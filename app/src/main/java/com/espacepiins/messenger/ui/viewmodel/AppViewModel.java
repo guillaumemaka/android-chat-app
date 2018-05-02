@@ -6,8 +6,8 @@ import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import com.espacepiins.messenger.application.ConstantsPreferences;
-import com.espacepiins.messsenger.R;
+import com.espacepiins.messenger.R;
+import com.espacepiins.messenger.application.Constants;
 
 /**
  * Created by guillaume on 18-03-17.
@@ -22,8 +22,8 @@ public class AppViewModel extends AndroidViewModel {
         mContactLoaded = new MutableLiveData<>();
         mContactLoaded.setValue(false);
 
-        if(application.getSharedPreferences(application.getString(R.string.preference_key), Context.MODE_PRIVATE)
-                .getString(ConstantsPreferences.LAST_CONTACT_IMPORTED, null) == null){
+        if (application.getApplicationContext().getSharedPreferences(application.getApplicationContext().getString(R.string.preference_key), Context.MODE_PRIVATE)
+                .getLong(Constants.LAST_CONTACT_IMPORTED, 0) != 0) {
             mContactLoaded.setValue(true);
         }
     }

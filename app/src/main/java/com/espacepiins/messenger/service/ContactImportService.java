@@ -4,20 +4,24 @@ import android.app.IntentService;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.Patterns;
 
+import com.espacepiins.messenger.BuildConfig;
+import com.espacepiins.messenger.R;
+import com.espacepiins.messenger.application.Constants;
 import com.espacepiins.messenger.db.AppDatabase;
 import com.espacepiins.messenger.db.entity.ContactEntity;
 import com.espacepiins.messenger.db.entity.EmailEntity;
 import com.espacepiins.messenger.db.entity.PhoneEntity;
-import com.espacepiins.messsenger.BuildConfig;
-import com.espacepiins.messsenger.R;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -51,6 +55,7 @@ public class ContactImportService extends IntentService {
             ContactsContract.CommonDataKinds.Phone.NUMBER + " NOTNULL) AND (" +
             ContactsContract.CommonDataKinds.Phone.NUMBER + " != '') AND (" +
             ContactsContract.CommonDataKinds.Email.ADDRESS + " NOTNULL) AND (" +
+            ContactsContract.Data.MIMETYPE + " = '" + ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE + "') AND (" +
             ContactsContract.CommonDataKinds.Email.ADDRESS + " != ''))";
 //            ContactsContract.CommonDataKinds.Phone.TYPE + " = '" + ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE + "') AND (" +
 //            ContactsContract.Data.MIMETYPE + " = '" + ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE + "') AND (" +
@@ -78,13 +83,12 @@ public class ContactImportService extends IntentService {
         if (intent != null) {
             final String action = intent.getAction();
             if (ACTION_CONTACT_IMPORT.equals(action)) {
-//                brooadcast();
                 handleActionContactImport();
             }
         }
     }
 
-    private void brooadcast(String action) {
+    private void broadcast(String action) {
         Intent intent = new Intent();
         intent.setAction(action);
         sendBroadcast(intent);
@@ -106,7 +110,7 @@ public class ContactImportService extends IntentService {
                 null,
                 ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " COLLATE LOCALIZED ASC");
         extractContactsFromCursor(db, data);
-        brooadcast(ContactImportReceiver.CONTACT_IMPORTED_ACTION);
+        broadcast(ContactImportReceiver.CONTACT_IMPORTED_ACTION);
     }
 
     /**
@@ -117,6 +121,8 @@ public class ContactImportService extends IntentService {
      */
     @NonNull
     private void extractContactsFromCursor(AppDatabase db, Cursor data) {
+        String currentLoggedInUserEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+
         List<ContactEntity> contacts = new ArrayList<>();
         List<EmailEntity> emails = new ArrayList<>();
         List<PhoneEntity> phones = new ArrayList<>();
@@ -135,6 +141,11 @@ public class ContactImportService extends IntentService {
             String phoneNumberType = data.getString(data.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE));
             String phoneNumberLabel = data.getString(data.getColumnIndex(ContactsContract.CommonDataKinds.Phone.LABEL));
             String photoThumbnailUri = data.getString(data.getColumnIndex(ContactsContract.CommonDataKinds.Photo.PHOTO_THUMBNAIL_URI));
+
+            if (currentLoggedInUserEmail.compareToIgnoreCase(emailAddress) == 0) {
+                Log.i(TAG, "Skip current user contact!");
+                continue;
+            }
 
             if (phoneNumber != null || emailAddress != null) {
                 if (BuildConfig.DEBUG) {
@@ -169,8 +180,8 @@ public class ContactImportService extends IntentService {
                     phoneEntity.setPhoneNumber(phoneNumber);
                     phoneEntity.setPhoneType(phoneNumberType);
                     phoneEntity.setContactLookupKey(lookupKey);
-                    if(!phones.contains(phoneEntity))
-                        phones.add(phoneEntity);
+//                    if(!phones.contains(phoneEntity))
+                    phones.add(phoneEntity);
                 }
 
 
@@ -181,8 +192,8 @@ public class ContactImportService extends IntentService {
                     emailEntity.setEmailType(emailAddressType);
                     emailEntity.setContactLookupKey(lookupKey);
 
-                    if(!emails.contains(emailEntity))
-                        emails.add(emailEntity);
+//                    if(!emails.contains(emailEntity))
+                    emails.add(emailEntity);
                 }
 
                 final ContactEntity contactEntity = new ContactEntity();
@@ -192,14 +203,33 @@ public class ContactImportService extends IntentService {
                 contactEntity.setLookupKey(lookupKey);
                 contactEntity.setPhotoThumbnailUri(photoThumbnailUri);
 
+                // Handle duplication
                 if(!contacts.contains(contactEntity))
                     contacts.add(contactEntity);
             }
         }
 
-        db.contactDao().insertContacts(contacts);
+        if (BuildConfig.DEBUG) {
+            db.contactDao().deleteAllContacts();
+            db.contactDao().deleteAllEmails();
+            db.contactDao().deleteAllPhones();
+        }
+
+        for (ContactEntity c : contacts) {
+            try {
+                db.contactDao().insertContacts(c);
+            } catch (Exception e) {
+                db.contactDao().update(c);
+            }
+        }
+
         db.contactDao().insertEmails(emails);
         db.contactDao().insertPhones(phones);
+
+        SharedPreferences prefs = getApplicationContext().getSharedPreferences(getApplicationContext().getString(R.string.preference_key), Context.MODE_PRIVATE);
+        prefs.edit()
+                .putLong(Constants.LAST_CONTACT_IMPORTED, new Date().getTime())
+                .apply();
     }
 
     private String getLabelForEmailType(int type, String customLabel) {

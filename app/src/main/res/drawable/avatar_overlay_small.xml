@@ -1,21 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/avatar_circle_small_bg"/>
+    <item
+        android:gravity="center"
+        android:drawable="@drawable/avatar_inner_small_border"/>
+</layer-list>
 
-    <corners
-        android:radius="100dp"
-        android:bottomRightRadius="20dp" />
-
-    <gradient
-        android:type="linear"
-        android:startColor="#0083ff"
-        android:centerColor="#00d4ff"
-        android:endColor="#00fff6"
-        android:angle="135"/>
-    <size
-        android:width="100dp"
-        android:height="100dp" />
-    <stroke
-        android:width="2.3dp"
-        android:color="#FFFFFF" />
-</shape>

@@ -11,14 +11,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
-import com.bumptech.glide.request.RequestOptions;
+import com.espacepiins.messenger.R;
+import com.espacepiins.messenger.application.GlideApp;
 import com.espacepiins.messenger.model.Contact;
 import com.espacepiins.messenger.model.SearchContactResult;
 import com.espacepiins.messenger.ui.ContactListFragment.OnListFragmentInteractionListener;
 import com.espacepiins.messenger.ui.callback.ContactSearchResultDiffCallback;
-import com.espacepiins.messsenger.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -118,11 +117,12 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
 
             if(mContact.getEmailAddresses() != null && mContact.getEmailAddresses().size() > 0){
                 mInfoTextView.setText(contact.getEmailAddresses().get(0).getEmailAddress());
-            } else{
-                if(mContact.getPhoneNumbers() != null && mContact.getPhoneNumbers().size() > 0){
-                    mInfoTextView.setText(mContact.getPhoneNumbers().get(0).getPhoneNumber());
-                }
             }
+//            else{
+//                if(mContact.getPhoneNumbers() != null && mContact.getPhoneNumbers().size() > 0){
+//                    mInfoTextView.setText(mContact.getPhoneNumbers().get(0).getPhoneNumber());
+//                }
+//            }
 
             if(mContact.getFirebaseUID() != null && !mContact.getFirebaseUID().isEmpty()){
                 mInAppStatus.setImageResource(R.drawable.ic_chat_bubbles);
@@ -130,11 +130,12 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
                 mInAppStatus.setImageResource(R.drawable.ic_men);
             }
 
-            Glide.with(mView)
+            GlideApp.with(mView)
                     .load(mContact.getPhotoThumbnailUri())
-                    .apply(RequestOptions.placeholderOf(R.drawable.avatar_overlay_small))
-                    .apply(RequestOptions.centerCropTransform())
-                    .apply(RequestOptions.circleCropTransform())
+                    .placeholder(R.drawable.avatar_overlay_small)
+                    .centerCrop()
+                    .circleCrop()
+                    .fallback(R.drawable.ic_face)
                     .transition(DrawableTransitionOptions.withCrossFade())
                     .into(mAvatarImageView);
         }

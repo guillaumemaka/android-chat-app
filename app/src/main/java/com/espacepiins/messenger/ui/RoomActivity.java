@@ -1,17 +1,16 @@
 package com.espacepiins.messenger.ui;
 
 import android.Manifest;
-import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -21,12 +20,14 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.util.Log;
-import android.view.Menu;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.espacepiins.messenger.R;
+import com.espacepiins.messenger.application.Constants;
+import com.espacepiins.messenger.application.FirebaseRefs;
+import com.espacepiins.messenger.databinding.ActivityRoomBinding;
 import com.espacepiins.messenger.job.UserFetcherJob;
 import com.espacepiins.messenger.model.Profile;
 import com.espacepiins.messenger.model.Room;
@@ -35,23 +36,65 @@ import com.espacepiins.messenger.service.ContactImportService;
 import com.espacepiins.messenger.ui.viewmodel.AppViewModel;
 import com.espacepiins.messenger.ui.viewmodel.ProfileViewModel;
 import com.espacepiins.messenger.ui.viewmodel.RoomListViewModel;
-import com.espacepiins.messsenger.R;
-import com.espacepiins.messsenger.databinding.ActivityRoomBinding;
+import com.espacepiins.messenger.util.FirebaseUtil;
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
+import com.google.firebase.database.FirebaseDatabase;
 
-import butterknife.BindBool;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class RoomActivity extends FirebaseAuthAwareActivity implements RoomListFragment.OnRoomInteractionListener {
+    /**
+     * TAT for logcat filtering
+     */
     private final String TAG = RoomActivity.class.getName();
-    private static final int SETUP_READ_CONTACTS_REQUEST_CODE = 0x001;
-    private static final int NEW_CONVERSATION_READ_CONTACTS_REQUEST_CODE = 0x002;
+
+    private static final int NEW_CONVERSATION_PERMISSION_REQUEST_CODE = 0x002;
     private static final int REQUEST_CONTACT_NEW_CONVERSATION_CODE = 0x002;
+
+    /**
+     * A View Model holding some global app settings/variables
+     */
     private AppViewModel mAppViewModel;
+
+    /**
+     * A view model holding a list of room for the current user and actions.
+     */
     private RoomListViewModel mRoomListViewModel;
+
+    /**
+     * The current logged in user profile.
+     */
     private Profile mProfile;
+
+    /**
+     * A receiver handling response from the ContactImportService,
+     * called when the service successfully/failed to import contacts
+     */
+    private ContactImportReceiver mContactImportReceiver;
+
+    /**
+     * The Map fragment.
+     */
+    private FriendsMapFragment mMapFragment;
+
+    /**
+     * The room list fragment
+     */
+    private Fragment mRoomList;
+
+    /**
+     * The job dispatcher
+     */
+    private FirebaseJobDispatcher mFirebaseJobDispatcher;
+
+    /**
+     * DataBinding for this activity
+     */
+    private ActivityRoomBinding mActivityRoomBinding;
+
+    // START ui binding declaration
 
     @BindView(R.id.pager)
     ViewPager mViewPager;
@@ -65,18 +108,7 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements RoomListF
     @BindView(R.id.profife_avatar_button)
     ImageButton mProfileAvatarImageButton;
 
-    @BindBool(R.bool.isTwoPane)
-    boolean isTwoPane;
-
-    @BindView(R.id.searchView)
-    TextView mSearchView;
-
-    private ContactImportReceiver mContactImportReceiver;
-    private FriendsMapFragment mMapFragment;
-    private Fragment mRoomList;
-
-    private FirebaseJobDispatcher mFirebaseJobDispatcher;
-    private ActivityRoomBinding mActivityRoomBinding;
+    // END ui binding declaration
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,8 +124,9 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements RoomListF
         final ActionBar actionBar = getSupportActionBar();
 
         actionBar.setDisplayHomeAsUpEnabled(false);
-        actionBar.setDisplayShowTitleEnabled(false);
+        actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setDisplayShowCustomEnabled(true);
+        actionBar.setTitle(R.string.app_name);
 
         mMapFragment = new FriendsMapFragment();
         mRoomList = new RoomListFragment();
@@ -102,22 +135,24 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements RoomListF
         mTabLayout.setupWithViewPager(mViewPager);
         mContactImportReceiver = new ContactImportReceiver();
 
+//        FirebaseUtil.setConnected(true);
+        FirebaseUtil.registerFcmIfNeeded();
         initViewModels();
-
-        mFirebaseJobDispatcher = UserFetcherJob.createJob(this);
+        initJobs();
     }
 
+
+    /**
+     * Initialize the required view models used in this activity
+     */
     private void initViewModels() {
         mAppViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
         mRoomListViewModel = ViewModelProviders.of(this).get(RoomListViewModel.class);
 
         final ProfileViewModel profileViewModel = ViewModelProviders.of(this).get(ProfileViewModel.class);
-        profileViewModel.getProfileData().observe(this, new Observer<Profile>() {
-            @Override
-            public void onChanged(@Nullable Profile profile) {
-                mProfile = profile;
-                mActivityRoomBinding.setProfile(profile);
-            }
+        profileViewModel.getProfileData(mCurrentUser.getUid()).observe(this, profile -> {
+            mProfile = profile;
+            mActivityRoomBinding.setProfile(profile);
         });
     }
 
@@ -129,11 +164,6 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements RoomListF
             this.registerReceiver(mContactImportReceiver, filter);
             Log.d(TAG, "onResume() - ContactImportReceiver registered!");
         }
-
-//        if(mQuery != null){
-//            initRoomsListener();
-//        }
-
     }
 
     @Override
@@ -143,16 +173,15 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements RoomListF
             this.unregisterReceiver(mContactImportReceiver);
             Log.d(TAG, "onPause() - ContactImportReceiver unregistered!");
         }
-
-//        if(mQuery != null){
-//            mQuery.removeEventListener(mRoomsListQueryListener);
-//        }
-
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        initJobs();
+    }
+
+    private void initJobs() {
         if (mFirebaseJobDispatcher == null) {
             mFirebaseJobDispatcher = UserFetcherJob.createJob(this);
         }
@@ -161,10 +190,7 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements RoomListF
     @Override
     protected void onRestart() {
         super.onRestart();
-
-        if (mFirebaseJobDispatcher == null) {
-            mFirebaseJobDispatcher = UserFetcherJob.createJob(this);
-        }
+        initJobs();
     }
 
     @Override
@@ -176,33 +202,22 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements RoomListF
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-//        getMenuInflater().inflate(R.menu.search_menu, menu);
-//
-//        MenuItem searchItem = menu.findItem(R.id.action_search);
-//        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-//        SearchView searchView = (SearchView) searchItem.getActionView();
-//        searchView.setIconifiedByDefault(false);
-//        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-
-        return true;
-    }
-
-    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_CONTACT_NEW_CONVERSATION_CODE) {
             if (resultCode == RESULT_OK) {
                 int action = data.getIntExtra("action", 0);
 
                 switch (action) {
+                    // Selecting a contact using the app
                     case ContactActivity.CONTACT_SELECTED:
                         String firebaseUID = data.getStringExtra(ContactActivity.EXTRA_FIREBASE_UID);
                         // 1: Create a new room
                         createConversation(firebaseUID);
                         break;
+                    // Contact not using the app, send invite.
                     case ContactActivity.INVITE_CONTACT:
                         String contactEmail = data.getStringExtra(ContactActivity.EXTRA_EMAIL);
-                        String contactDisplayname = data.getStringExtra("displayName");
+                        String contactDisplayname = data.getStringExtra(ContactActivity.EXTRA_DISPLAY_NAME);
                         // 1: Invite contact to download the application
                         inviteContact(contactDisplayname, contactEmail);
                         break;
@@ -213,16 +228,20 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements RoomListF
                 }
             }
         }
-
-        super.onActivityResult(requestCode, resultCode, data);
     }
 
+    /**
+     * Send invitation via email to a contact
+     *
+     * @param contactDisplayname the contact display name.
+     * @param contactEmail       the contact email address
+     */
     private void inviteContact(String contactDisplayname, String contactEmail) {
         Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", contactEmail, null));
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Viens discuter su PiinsMessenger!");
-        emailIntent.putExtra(Intent.EXTRA_TEXT, "%s vous invites à rejoindre PiinsMessenger\nCopiez ce lien dans votre navigateur pour installer l'application %s");
+        emailIntent.putExtra(Intent.EXTRA_TEXT, String.format("%s vous invites à rejoindre PiinsMessenger\nCopiez ce lien dans votre navigateur pour installer l'application %s", contactDisplayname, getString(R.string.app_name)));
         emailIntent.putExtra(Intent.EXTRA_HTML_TEXT, Html.fromHtml(new StringBuilder()
-                .append("<p><b>").append(contactDisplayname).append("</b>").append(" vous invites à rejoindre PiinsMessenger.").append("</p>")
+                .append("<p><b>").append(contactDisplayname).append("</b>").append(" vous invites à rejoindre ").append(getString(R.string.app_name)).append(".</p>")
                 .append("<p>").append("Cliquez sur ce lien pour installer l'application")
                 .append("<a>").append(getString(R.string.internal_test_dynamic_link)).append("</a>")
                 .append("</p>")
@@ -231,11 +250,16 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements RoomListF
         startActivity(Intent.createChooser(emailIntent, "Envoyer une invitation"));
     }
 
+
+    /**
+     * Create a new room and start the chat activity
+     * @param contactUID
+     */
     public void createConversation(String contactUID) {
-        mRoomListViewModel.createRoom(mProfile, contactUID, new RoomListViewModel.OnRoomCreated() {
+        mRoomListViewModel.createOrRetrieveRoom(mProfile, contactUID, new RoomListViewModel.OnRoomCreated() {
             @Override
             public void onSuccess(String roomKey) {
-
+                startChatActivity(roomKey);
             }
 
             @Override
@@ -246,31 +270,49 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements RoomListF
 
     }
 
-    @OnClick(R.id.searchView)
-    public void onSearchViewClick(View view){
-        Log.d(TAG, "onSearchViewClick clicked!");
-        Intent intent = new Intent(this, ContactSearchResultsActivity.class);
-        startActivity(intent);
+    protected void startChatActivity(String roomKey) {
+        Intent chatIntent = new Intent(RoomActivity.this, ChatActivity.class);
+        chatIntent.putExtra(ChatActivity.EXTRA_ROOM_ID, roomKey);
+        startActivity(chatIntent);
     }
 
+    /**
+     * Show the profile activity
+     * @param imageButton
+     */
     @OnClick(R.id.profife_avatar_button)
     public void onProfileAvatarImageButtonClick(View imageButton) {
         Intent intent = new Intent(this, ProfileActivity.class);
+        intent.putExtra(ProfileActivity.EXTRA_READ_ONLY, false);
+        intent.putExtra(ProfileActivity.EXTRA_DISABLE_SIGNOUT, false);
+        intent.putExtra(ProfileActivity.EXTRA_USER_PROFILE_ID, mCurrentUser.getUid());
         startActivity(intent);
         Log.d(TAG, "onProfileAvatarImageButtonClick clicked!");
     }
 
+    /**
+     * Show the contact activity
+     * @param button
+     */
     @OnClick(R.id.floatingActionButton)
     public void onFloatingActionButtonClick(View button) {
         Log.d(TAG, "onFloatingActionButtonClick clicked!");
-        requestContactPermission(NEW_CONVERSATION_READ_CONTACTS_REQUEST_CODE);
+        requestContactPermission(NEW_CONVERSATION_PERMISSION_REQUEST_CODE);
     }
 
-    private void newConversation(){
+    /**
+     * Start the contact activity
+     */
+    private void startContactActivity(){
         Intent contactIntent = new Intent(this, ContactActivity.class);
         startActivityForResult(contactIntent, REQUEST_CONTACT_NEW_CONVERSATION_CODE);
     }
 
+    /**
+     * Helper for check a permission status.
+     * @param permission the permission to check
+     * @return true if granted otherwise false
+     */
     public boolean hasPermission(String permission){
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M){
             return true;
@@ -281,12 +323,14 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements RoomListF
 
     private void requestContactPermission(int requestCode) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if(shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS))
+            if (!hasPermission(Manifest.permission.READ_CONTACTS)) {
+                if (shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS))
                     Toast.makeText(this, R.string.read_contacts_permission_rational_message_hint, Toast.LENGTH_LONG)
                             .show();
 
-            requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, requestCode);
-            return;
+                requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, requestCode);
+                return;
+            }
         }
 
         dispatchActionForPermissionRequestCode(requestCode);
@@ -294,22 +338,29 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements RoomListF
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == SETUP_READ_CONTACTS_REQUEST_CODE || requestCode == NEW_CONVERSATION_READ_CONTACTS_REQUEST_CODE) {
+        if (requestCode == NEW_CONVERSATION_PERMISSION_REQUEST_CODE) {
             if(grantResults.length > 0){
                 if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
                     dispatchActionForPermissionRequestCode(requestCode);
                 }
             }
-        } else {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 
+    /**
+     * Helper method for dispatch action for permission request code.
+     * @param requestCode a permission request code.
+     */
     private void dispatchActionForPermissionRequestCode(int requestCode) {
-        ContactImportService.startActionContactImport(this);
         switch (requestCode) {
-            case NEW_CONVERSATION_READ_CONTACTS_REQUEST_CODE:
-                newConversation();
+            case NEW_CONVERSATION_PERMISSION_REQUEST_CODE:
+                SharedPreferences prefs = getSharedPreferences(getString(R.string.preference_key), MODE_PRIVATE);
+                long lastImportedTime = prefs.getLong(Constants.LAST_CONTACT_IMPORTED, 0);
+                if (lastImportedTime == 0) {
+                    ContactImportService.startActionContactImport(this);
+                }
+
+                startContactActivity();
                 break;
             default:
                 break;
@@ -318,8 +369,13 @@ public class RoomActivity extends FirebaseAuthAwareActivity implements RoomListF
 
     @Override
     public void onRoomSelected(Room room) {
-        Toast.makeText(this, "Implementation dans le livrable 3!!!", Toast.LENGTH_LONG)
-                .show();
+        if (!room.isRead()) {
+            FirebaseDatabase
+                    .getInstance()
+                    .getReference(FirebaseRefs.USER_ROOMS_REF(mCurrentUser.getUid()) + "/" + room.getRoomUID())
+                    .child("read").setValue(true);
+        }
+        startChatActivity(room.getRoomUID());
     }
 
     public class ViewPagerAdapter extends FragmentPagerAdapter {

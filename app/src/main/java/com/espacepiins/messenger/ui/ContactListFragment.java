@@ -17,9 +17,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
+import com.espacepiins.messenger.R;
 import com.espacepiins.messenger.model.SearchContactResult;
 import com.espacepiins.messenger.ui.viewmodel.ContactSearchViewModel;
-import com.espacepiins.messsenger.R;
 
 import java.util.List;
 

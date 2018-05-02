@@ -7,7 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.Adapter;
 import android.widget.ListView;
 
-import com.espacepiins.messsenger.R;
+import com.espacepiins.messenger.R;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

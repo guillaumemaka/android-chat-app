@@ -55,6 +55,7 @@
                 android:layout_marginTop="5dp"
                 android:fontFamily="sans-serif-thin"
                 android:text="@{room.lastMessage}"
+                android:textColor="#ababab"
                 app:textStyle='@{room.read ? "italic" : "bold|italic"}'/>
 
         </LinearLayout>
@@ -66,7 +67,7 @@
             android:layout_gravity="top|end"
             android:layout_marginEnd="20dp"
             android:layout_marginStart="5dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
             android:layout_weight="2"
             app:timestamp="@{room.lastMessageTimestamp ?? room.createdAt}"
             app:textStyle='@{room.read ? "italic" : "bold|italic"}'

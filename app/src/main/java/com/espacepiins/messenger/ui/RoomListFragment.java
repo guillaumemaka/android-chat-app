@@ -3,9 +3,7 @@ package com.espacepiins.messenger.ui;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.databinding.DataBindingUtil;
-import android.graphics.Typeface;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.util.DiffUtil;
@@ -17,11 +15,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.espacepiins.messenger.R;
+import com.espacepiins.messenger.databinding.RoomRowBinding;
 import com.espacepiins.messenger.model.Room;
 import com.espacepiins.messenger.ui.callback.GenericDiffCallback;
 import com.espacepiins.messenger.ui.viewmodel.RoomListViewModel;
-import com.espacepiins.messsenger.R;
-import com.espacepiins.messsenger.databinding.RoomRowBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -78,13 +76,6 @@ public class RoomListFragment extends Fragment {
         mRecyclerView.setAdapter(mAdapter);
 
         mRoomListViewModel = ViewModelProviders.of(this).get(RoomListViewModel.class);
-
-        return view;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
         mRoomListViewModel.getRooms().observe(this.getActivity(), rooms -> {
             mAdapter.setRooms(rooms);
             if (rooms.size() == 0) {
@@ -95,6 +86,7 @@ public class RoomListFragment extends Fragment {
                 mEmptyView.setVisibility(View.GONE);
             }
         });
+        return view;
     }
 
     @Override
@@ -155,28 +147,6 @@ public class RoomListFragment extends Fragment {
                     mListener.onRoomSelected(holder.binding.getRoom());
                 }
             });
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull List<Object> payloads) {
-            if(payloads.isEmpty()){
-                onBindViewHolder(holder, position);
-            }else {
-                for(Object data : payloads){
-                    switch ((GenericDiffCallback.DiffState) data){
-                        case STATE_NEW:
-                            holder.binding.roomRowDisplayName.setTypeface(null, Typeface.BOLD_ITALIC);
-                            holder.binding.lastMessageTime.setTypeface(null, Typeface.BOLD_ITALIC);
-                            holder.binding.roomRowLastMessage.setTypeface(null, Typeface.BOLD_ITALIC);
-                            break;
-                        default:
-                            holder.binding.roomRowDisplayName.setTypeface(null, Typeface.NORMAL);
-                            holder.binding.lastMessageTime.setTypeface(null, Typeface.NORMAL);
-                            holder.binding.roomRowLastMessage.setTypeface(null, Typeface.NORMAL);
-                            break;
-                    }
-                }
-            }
         }
 
         @Override

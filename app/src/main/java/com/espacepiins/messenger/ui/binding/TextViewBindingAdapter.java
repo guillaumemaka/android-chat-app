@@ -5,20 +5,22 @@ import android.graphics.Typeface;
 import android.text.format.DateUtils;
 import android.widget.TextView;
 
+import com.espacepiins.messenger.application.Constants;
+
 import java.util.Date;
 
 public class TextViewBindingAdapter {
-    @BindingAdapter({"bind:timestamp"})
-    public static void timestamp(TextView view, Long timestamp) {
+    @BindingAdapter("app:timestamp")
+    public static void setTimestamp(TextView view, Long timestamp) {
         CharSequence timestampAsText = "";
         if (timestamp != null)
-            timestampAsText = DateUtils.getRelativeTimeSpanString(timestamp, new Date().getTime(), DateUtils.SECOND_IN_MILLIS);
+            timestampAsText = DateUtils.getRelativeTimeSpanString(timestamp, new Date().getTime(), Constants.DEFAULT_DATE_MIN_RESOLUTION);
 
         view.setText(timestampAsText);
     }
 
-    @BindingAdapter({"bind:textStyle"})
-    public static void textStyle(TextView view, String style) {
+    @BindingAdapter("app:textStyle")
+    public static void setTextStyle(TextView view, String style) {
         switch (style) {
             case "bold":
                 view.setTypeface(null, Typeface.BOLD);

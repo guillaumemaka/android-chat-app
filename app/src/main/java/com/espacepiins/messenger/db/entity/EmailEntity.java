@@ -22,7 +22,7 @@ public class EmailEntity implements Comparable<EmailEntity>{
     @ColumnInfo(name = "email_type")
     private String emailType;
 
-    @ColumnInfo(name = "contact_lookup_key")
+    @ColumnInfo(name = "contact_lookup_key", index = true)
     private String contactLookupKey;
 
     public EmailEntity() {

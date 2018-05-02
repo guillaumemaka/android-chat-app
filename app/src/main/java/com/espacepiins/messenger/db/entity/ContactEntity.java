@@ -19,7 +19,7 @@ public class ContactEntity implements Contact, Comparable<ContactEntity> {
     @PrimaryKey
     @NonNull
     private String id;
-    @ColumnInfo(name = "lookup_key")
+    @ColumnInfo(name = "lookup_key", index = true)
     private String lookupKey;
     @ColumnInfo(name = "display_name", index = true)
     private String displayName;

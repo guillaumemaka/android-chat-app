@@ -21,7 +21,9 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by guillaume on 18-03-20.
@@ -53,7 +55,7 @@ public class RoomListViewModel extends AndroidViewModel implements ValueEventLis
         if (this.mCurrentUser == null)
             throw new RuntimeException("You shouldn't be here!");
 
-        mRoomQuery = mFirebaseDatabase.getReference(FirebaseRefs.ROOMS_REF(mCurrentUser.getUid()));
+        mRoomQuery = mFirebaseDatabase.getReference(FirebaseRefs.USER_ROOMS_REF(mCurrentUser.getUid()));
         mRoomQuery.addValueEventListener(this);
     }
 
@@ -61,30 +63,52 @@ public class RoomListViewModel extends AndroidViewModel implements ValueEventLis
         return mRooms;
     }
 
-    public void createRoom(@NonNull Profile from, @NonNull String to, OnRoomCreated completionHandler) {
-        final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference toProfileRef = database.getReference(FirebaseRefs.USER_PROFILES_REF(to));
+    public void createOrRetrieveRoom(@NonNull Profile from, @NonNull String to, OnRoomCreated completionHandler) {
+        DatabaseReference toProfileRef = mFirebaseDatabase.getReference(FirebaseRefs.USER_PROFILES_REF(to));
+        final String exists = searchExistingRoom(to);
+        if (exists != null) {
+            completionHandler.onSuccess(exists);
+        } else {
+            toProfileRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    final Profile toProfile = dataSnapshot.getValue(Profile.class);
+                    final DatabaseReference roomRef = mFirebaseDatabase.getReference(FirebaseRefs.USER_ROOMS_REF(from.getUserUID())).push();
 
-        toProfileRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                final Profile toProfile = dataSnapshot.getValue(Profile.class);
-                final DatabaseReference roomRef = database.getReference(FirebaseRefs.ROOMS_REF(from.getUserUID())).push();
-                final Room room = new Room();
-                room.setRoomUID(roomRef.getKey());
-                room.setFrom(from.getUserUID());
-                room.setFromDisplayName(from.getDisplayName());
-                room.setTo(toProfile.getUserUID());
-                room.setToDisplayName(toProfile.getDisplayName());
-                roomRef.setValue(room.toMap());
-                completionHandler.onSuccess(roomRef.getKey());
-            }
+                    final Map<String, Object> update = new HashMap<>();
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                completionHandler.onFailure(databaseError.toException());
+                    final Room room = new Room();
+
+                    room.setRoomUID(roomRef.getKey());
+                    room.setFrom(from.getUserUID());
+                    room.setFromDisplayName(from.getDisplayName());
+                    room.setTo(toProfile.getUserUID());
+                    room.setToDisplayName(toProfile.getDisplayName());
+
+                    update.put(FirebaseRefs.ROOMS_REF(room.getRoomUID()), room.toMap());
+                    update.put(FirebaseRefs.USER_ROOMS_REF(from.getUserUID()) + "/" + room.getRoomUID(), room.toMap());
+
+                    mFirebaseDatabase.getReference().updateChildren(update);
+
+                    completionHandler.onSuccess(roomRef.getKey());
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    completionHandler.onFailure(databaseError.toException());
+                }
+            });
+        }
+    }
+
+    public String searchExistingRoom(String to) {
+        for (Room room : mRooms.getValue()) {
+            if (room.getTo().equals(to)) {
+                return room.getRoomUID();
             }
-        });
+        }
+
+        return null;
     }
 
     @Override
@@ -100,56 +124,4 @@ public class RoomListViewModel extends AndroidViewModel implements ValueEventLis
     public void onCancelled(DatabaseError databaseError) {
         Log.w(TAG, databaseError.getMessage(), databaseError.toException());
     }
-
-//    @Override
-//    protected void onCleared() {
-//        mRoomQuery.removeEventListener(this);
-//        super.onCleared();
-//    }
-//
-//    @Override
-//    public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-//        final Room room = dataSnapshot.getValue(Room.class);
-//        final List<Room> rooms = this.mRooms.getValue();
-//        rooms.add(room);
-//        mRooms.postValue(rooms);
-//        Log.d(TAG, room.toString());
-//    }
-//
-//    @Override
-//    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-//        final Room changedRoom = dataSnapshot.getValue(Room.class);
-//        final List<Room> previousRooms = mRooms.getValue();
-//        for (Room room : previousRooms) {
-//            if (Objects.equals(room.getRoomUID(), changedRoom.getRoomUID())) {
-//                int index = previousRooms.indexOf(room);
-//                previousRooms.set(index, room);
-//                break;
-//            }
-//        }
-//        mRooms.postValue(previousRooms);
-//    }
-//
-//    @Override
-//    public void onChildRemoved(DataSnapshot dataSnapshot) {
-//        final Room deletedRoom = dataSnapshot.getValue(Room.class);
-//        final List<Room> previousRooms = mRooms.getValue();
-//        for (Room room : previousRooms) {
-//            if (Objects.equals(room.getRoomUID(), deletedRoom.getRoomUID())) {
-//                previousRooms.remove(room);
-//                break;
-//            }
-//        }
-//        mRooms.postValue(previousRooms);
-//    }
-//
-//    @Override
-//    public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-//
-//    }
-//
-//    @Override
-//    public void onCancelled(DatabaseError databaseError) {
-//        Log.w(TAG, databaseError.getMessage(), databaseError.toException());
-//    }
 }

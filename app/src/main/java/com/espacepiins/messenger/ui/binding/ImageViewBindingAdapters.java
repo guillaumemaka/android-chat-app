@@ -6,12 +6,12 @@ import android.util.Log;
 import android.widget.ImageView;
 
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
+import com.espacepiins.messenger.R;
 import com.espacepiins.messenger.application.FirebaseRefs;
 import com.espacepiins.messenger.application.GlideApp;
 import com.espacepiins.messenger.model.Profile;
 import com.espacepiins.messenger.model.Room;
 import com.espacepiins.messenger.util.GravatarUtil;
-import com.espacepiins.messsenger.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -20,7 +20,7 @@ import com.google.firebase.database.ValueEventListener;
 public class ImageViewBindingAdapters {
     private static final String TAG = ImageView.class.getName();
 
-    @BindingAdapter({"bind:imageUrl", "bind:fallbackDrawable", "bind:gravatar"})
+    @BindingAdapter(requireAll = true, value = {"bind:imageUrl", "bind:fallbackDrawable", "bind:gravatar"})
     public static void loadImageUrl(ImageView view, String imageUrl, Drawable fallbackDrawable, String email) {
         Log.i(TAG, "app:imageUrl: " + imageUrl);
         String url = gravatar(view, imageUrl, email);
@@ -55,8 +55,8 @@ public class ImageViewBindingAdapters {
                 .into(view);
     }
 
-    @BindingAdapter({"bind:fromRoom"})
-    public static void fromRoom(ImageView view, Room room) {
+    @BindingAdapter("bind:fromRoom")
+    public static void setFromRoom(ImageView view, Room room) {
         FirebaseDatabase.getInstance().getReference(FirebaseRefs.USER_PROFILES_REF(room.getTo()))
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override

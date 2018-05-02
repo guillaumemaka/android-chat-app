@@ -10,12 +10,10 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
-import android.widget.Toast;
 
+import com.espacepiins.messenger.R;
 import com.espacepiins.messenger.db.entity.EmailEntity;
-import com.espacepiins.messenger.db.entity.PhoneEntity;
 import com.espacepiins.messenger.model.SearchContactResult;
-import com.espacepiins.messsenger.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +26,7 @@ public class ContactActivity extends FirebaseAuthAwareActivity implements Contac
     public static final int NO_CONTACT_SELECTED = 0x100;
     public static final int CONTACT_SELECTED = 0x200;
     public static final int INVITE_CONTACT = 0x300;
+    public static final String EXTRA_DISPLAY_NAME = "displayName";
     public static final String EXTRA_EMAIL = "emailAddress";
     public static final String EXTRA_FIREBASE_UID = "firebase_uid";
 
@@ -83,25 +82,29 @@ public class ContactActivity extends FirebaseAuthAwareActivity implements Contac
             setResult(Activity.RESULT_OK, resultIntent);
             finish();
         } else {
-            final List<String> emailsAndPhones = new ArrayList<>();
+            final List<String> emails = new ArrayList<>();
 
             for (int i = 0; i < item.getEmailAddresses().size(); i++) {
                 final EmailEntity emailEntity = item.getEmailAddresses().get(i);
-                emailsAndPhones.add(String.format("%s (%s)", emailEntity.getEmailAddress(), emailEntity.getEmailType()));
+                emails.add(emailEntity.getEmailAddress());
             }
 
-            for (int i = 0; i < item.getPhoneNumbers().size(); i++) {
-                final PhoneEntity phoneEntity = item.getPhoneNumbers().get(i);
-                emailsAndPhones.add(String.format("%s (%s)", phoneEntity.getPhoneNumber(), phoneEntity.getPhoneType()));
-            }
+//            for (int i = 0; i < item.getPhoneNumbers().size(); i++) {
+//                final PhoneEntity phoneEntity = item.getPhoneNumbers().get(i);
+//                emails.add(String.format("%s (%s)", phoneEntity.getPhoneNumber(), phoneEntity.getPhoneType()));
+//            }
 
             final AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
             alertDialog.setTitle("Inviter");
             alertDialog.setIcon(R.drawable.ic_men);
-            alertDialog.setItems(emailsAndPhones.toArray(new String[emailsAndPhones.size()]), new DialogInterface.OnClickListener() {
+            alertDialog.setItems(emails.toArray(new String[emails.size()]), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    Toast.makeText(ContactActivity.this, emailsAndPhones.get(i), Toast.LENGTH_SHORT).show();
+                    resultIntent.putExtra(EXTRA_EMAIL, emails.get(i));
+                    resultIntent.putExtra(EXTRA_DISPLAY_NAME, item.getDisplayName());
+
+                    setResult(Activity.RESULT_OK, resultIntent);
+                    finish();
                 }
             });
             alertDialog.create().show();

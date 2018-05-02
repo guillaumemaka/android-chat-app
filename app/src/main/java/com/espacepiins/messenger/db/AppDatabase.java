@@ -15,7 +15,7 @@ import com.espacepiins.messenger.db.entity.RoomEntity;
 /**
  * Created by guillaume on 18-03-06.
  */
-@Database(entities = {ContactEntity.class, EmailEntity.class, PhoneEntity.class, RoomEntity.class}, version = 7)
+@Database(entities = {ContactEntity.class, EmailEntity.class, PhoneEntity.class, RoomEntity.class}, version = 8)
 public abstract class AppDatabase extends RoomDatabase {
     private static final String DATABASE_NAME = "piins-messenger";
 

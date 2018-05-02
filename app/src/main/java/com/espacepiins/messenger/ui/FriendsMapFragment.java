@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import com.bumptech.glide.request.target.BaseTarget;
 import com.bumptech.glide.request.target.SizeReadyCallback;
 import com.bumptech.glide.request.transition.Transition;
+import com.espacepiins.messenger.R;
 import com.espacepiins.messenger.application.FirebaseRefs;
 import com.espacepiins.messenger.application.GlideApp;
 import com.espacepiins.messenger.application.LocationListener;
@@ -28,7 +29,6 @@ import com.espacepiins.messenger.db.entity.ContactEntity;
 import com.espacepiins.messenger.model.Profile;
 import com.espacepiins.messenger.util.MapUtil;
 import com.espacepiins.messenger.util.PermissionRequester;
-import com.espacepiins.messsenger.R;
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
@@ -166,7 +166,7 @@ public final class FriendsMapFragment extends SupportMapFragment implements OnMa
     }
 
     private boolean isUserInContacts(String firebaseUID) {
-        return mRegisteredUsers.contains(firebaseUID);
+        return mRegisteredUsers.contains(firebaseUID) || FirebaseAuth.getInstance().getCurrentUser().getUid().equals(firebaseUID);
     }
 
     /**************************************************************
@@ -186,7 +186,7 @@ public final class FriendsMapFragment extends SupportMapFragment implements OnMa
 
         permissionRequester.request((grantedPermissions, deniedPermissions, requestCode) -> {
             if (grantedPermissions.size() == 2) {
-                new fetchRegisteredUserAndInit().execute();
+                new fetchRegisteredUserAndInit(getContext()).execute();
             } else if (deniedPermissions.size() > 0) {
                 Snackbar.make(getActivity().findViewById(R.id.room_activity_coord_layout), "Pour localiser vos amis, je dois avoir accès à votre position gégraphique!", Snackbar.LENGTH_INDEFINITE)
                         .setAction("OK", v -> requestPermissions(deniedPermissions.keySet().toArray(new String[deniedPermissions.size()]), requestCode))
@@ -207,8 +207,8 @@ public final class FriendsMapFragment extends SupportMapFragment implements OnMa
         Log.d(TAG, "onDataEntered " + dataSnapshot.getValue().toString());
         Log.d(TAG, "onDataEntered " + location.toString());
 
-        if (!isUserInContacts(dataSnapshot.getKey()))
-            return;
+//        if (!isUserInContacts(dataSnapshot.getKey()))
+//            return;
         addMarker(dataSnapshot.getKey(), new LatLng(location.latitude, location.longitude));
     }
 
@@ -216,8 +216,8 @@ public final class FriendsMapFragment extends SupportMapFragment implements OnMa
     public void onDataExited(DataSnapshot dataSnapshot) {
         Log.d(TAG, "onDataExited " + dataSnapshot.getValue().toString());
 
-        if (!isUserInContacts(dataSnapshot.getKey()))
-            return;
+//        if (!isUserInContacts(dataSnapshot.getKey()))
+//            return;
 
         if (markers.containsKey(dataSnapshot.getKey())) {
             markers.get(dataSnapshot.getKey()).remove();
@@ -230,8 +230,8 @@ public final class FriendsMapFragment extends SupportMapFragment implements OnMa
         Log.d(TAG, "onDataMoved " + dataSnapshot.getValue().toString());
         Log.d(TAG, "onDataMoved " + location.toString());
 
-        if (!isUserInContacts(dataSnapshot.getKey()))
-            return;
+//        if (!isUserInContacts(dataSnapshot.getKey()))
+//            return;
 
         if (markers.containsKey(dataSnapshot.getKey())) {
             markers.get(dataSnapshot.getKey()).setPosition(new LatLng(location.latitude, location.longitude));
@@ -240,8 +240,9 @@ public final class FriendsMapFragment extends SupportMapFragment implements OnMa
 
     @Override
     public void onDataChanged(DataSnapshot dataSnapshot, GeoLocation location) {
-        Log.d(TAG, "onDataChanged " + dataSnapshot.getValue().toString());
-        Log.d(TAG, "onDataChanged " + location.toString());
+        Log.d(TAG, "onDataChanged key: " + dataSnapshot.getKey());
+        Log.d(TAG, "onDataChanged value: " + dataSnapshot.getValue().toString());
+        Log.d(TAG, "onDataChanged location: " + location.toString());
 
         if (!isUserInContacts(dataSnapshot.getKey()))
             return;
@@ -326,9 +327,15 @@ public final class FriendsMapFragment extends SupportMapFragment implements OnMa
     }
 
     class fetchRegisteredUserAndInit extends AsyncTask<Void, Void, Set<String>> {
+        private Context mContext;
+
+        public fetchRegisteredUserAndInit(Context context) {
+            mContext = context;
+        }
+
         @Override
         protected Set<String> doInBackground(Void... voids) {
-            final AppDatabase db = ((MessengerApplicationContext) getContext()).getAppDatabaseInstance();
+            final AppDatabase db = ((MessengerApplicationContext) mContext.getApplicationContext()).getAppDatabaseInstance();
             final List<ContactEntity> contacts = db.contactDao().getAll();
             final Set<String> registeredUsers = new HashSet<>();
             for (ContactEntity contactEntity : contacts) {
@@ -340,6 +347,7 @@ public final class FriendsMapFragment extends SupportMapFragment implements OnMa
 
         @Override
         protected void onPostExecute(Set<String> users) {
+            Log.d(TAG, "registeredUsers: " + users);
             mRegisteredUsers = users;
             initializeGeoFireQuery();
         }
