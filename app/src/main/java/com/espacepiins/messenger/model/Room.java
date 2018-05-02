@@ -1,36 +1,43 @@
 package com.espacepiins.messenger.model;
 
+import android.support.annotation.NonNull;
+
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created by guillaume on 18-02-22.
  */
 
 @IgnoreExtraProperties
-public class Room {
+public class Room implements Comparable<Room> {
+    private String roomUID;
     private String from;
     private String fromDisplayName;
-    private Map<String, String> members;
+    private String to;
+    private String toDisplayName;
+    private String lastMessageUID;
     private String lastMessage;
-    private Date sentAt;
+    private boolean read;
+    private Long lastMessageTimestamp;
+    private Long createdAt;
 
     public Room(){
-        this.members = new HashMap<String, String>();
-        this.sentAt = new Date();
+        this.createdAt = new Date().getTime();
+        this.read = false;
     }
 
-    public Room(String from, String fromDisplayName, Map<String,String> members, String lastMessage, Date sentAt) {
-        this();
-        this.from = from;
-        this.fromDisplayName = fromDisplayName;
-        this.members = members;
-        this.lastMessage = lastMessage;
-        this.sentAt = sentAt;
+    public String getRoomUID() {
+        return roomUID;
+    }
+
+    public void setRoomUID(String roomUID) {
+        this.roomUID = roomUID;
     }
 
     public String getFrom() {
@@ -49,8 +56,36 @@ public class Room {
         this.from = from;
     }
 
-    public Map<String, String> getMembers() {
-        return members;
+    public String getTo() {
+        return to;
+    }
+
+    public void setTo(String to) {
+        this.to = to;
+    }
+
+    public String getToDisplayName() {
+        return toDisplayName;
+    }
+
+    public void setToDisplayName(String toDisplayName) {
+        this.toDisplayName = toDisplayName;
+    }
+
+    public String getLastMessageUID() {
+        return lastMessageUID;
+    }
+
+    public void setLastMessageUID(String lastMessageUID) {
+        this.lastMessageUID = lastMessageUID;
+    }
+
+    public Long getLastMessageTimestamp() {
+        return lastMessageTimestamp;
+    }
+
+    public void setLastMessageTimestamp(Long lastMessageTimestamp) {
+        this.lastMessageTimestamp = lastMessageTimestamp;
     }
 
     public String getLastMessage() {
@@ -61,30 +96,77 @@ public class Room {
         this.lastMessage = lastMessage;
     }
 
-    public Date getSentAt() {
-        return sentAt;
+    public Long getCreatedAt() {
+        return createdAt;
     }
 
-    public void setSentAt(Date sentAt) {
-        this.sentAt = sentAt;
+    public void setCreatedAt(Long createdAt) {
+        this.createdAt = createdAt;
     }
 
+    public boolean isRead() {
+        return read;
+    }
 
-
-    public void addMember(String username, String displayName){
-        if(!members.containsKey(username)){
-            this.members.put(username,  displayName);
-        }
+    public void setRead(boolean read) {
+        this.read = read;
     }
 
     @Exclude
     public Map<String, Object> toMap(){
         HashMap<String, Object> values = new HashMap<>();
+        values.put("roomUID", this.getRoomUID());
         values.put("from", this.getFrom());
         values.put("fromDisplayName", this.getFromDisplayName());
-        values.put("members", this.getMembers());
+        values.put("lastMessageUID", this.getLastMessageUID());
+        values.put("lastMessageTimestamp", this.getLastMessageTimestamp());
+        values.put("to", this.getTo());
+        values.put("toDisplayName", this.getToDisplayName());
         values.put("lastMessage", this.getLastMessage());
-        values.put("sentAt", this.getSentAt().getTime());
+        values.put("createdAt", this.getCreatedAt());
+        values.put("read", this.isRead());
         return values;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Room)) return false;
+        Room room = (Room) o;
+        return read == room.read &&
+                Objects.equals(roomUID, room.roomUID) &&
+                Objects.equals(from, room.from) &&
+                Objects.equals(fromDisplayName, room.fromDisplayName) &&
+                Objects.equals(to, room.to) &&
+                Objects.equals(toDisplayName, room.toDisplayName) &&
+                Objects.equals(lastMessageUID, room.lastMessageUID) &&
+                Objects.equals(lastMessage, room.lastMessage) &&
+                Objects.equals(lastMessageTimestamp, room.lastMessageTimestamp) &&
+                Objects.equals(createdAt, room.createdAt);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(roomUID, from, fromDisplayName, to, toDisplayName, lastMessageUID, lastMessage, read, lastMessageTimestamp, createdAt);
+    }
+
+    @Override
+    public int compareTo(@NonNull Room o) {
+        if (o.lastMessageTimestamp != null) {
+            if (lastMessageTimestamp > o.lastMessageTimestamp)
+                return 1;
+
+            if (lastMessageTimestamp < o.lastMessageTimestamp)
+                return -1;
+        }
+
+        if (createdAt > o.createdAt)
+            return 1;
+
+        if (createdAt < o.createdAt)
+            return -1;
+
+        return 0;
     }
 }

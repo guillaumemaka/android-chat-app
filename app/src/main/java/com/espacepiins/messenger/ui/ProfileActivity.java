@@ -2,30 +2,25 @@ package com.espacepiins.messenger.ui;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
-import android.databinding.BindingAdapter;
 import android.databinding.BindingMethod;
 import android.databinding.BindingMethods;
 import android.databinding.DataBindingUtil;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NavUtils;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
 
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
-import com.espacepiins.messenger.application.GlideApp;
+import com.espacepiins.messenger.R;
+import com.espacepiins.messenger.databinding.ActivityProfileBinding;
 import com.espacepiins.messenger.model.Profile;
 import com.espacepiins.messenger.ui.viewmodel.ProfileViewModel;
-import com.espacepiins.messenger.util.GravatarUtil;
-import com.espacepiins.messsenger.R;
-import com.espacepiins.messsenger.databinding.ActivityProfileBinding;
+import com.espacepiins.messenger.util.FirebaseUtil;
 import com.google.firebase.auth.FirebaseAuth;
 import com.vansuita.pickimage.bean.PickResult;
 import com.vansuita.pickimage.dialog.PickImageDialog;
@@ -48,12 +43,18 @@ import butterknife.OnClick;
         @BindingMethod(type = android.support.design.widget.FloatingActionButton.class,
                 attribute = "app:backgroundTint",
                 method = "setBackgroundTintList")})
-public class ProfileActivity extends AppCompatActivity implements IPickResult {
+public class ProfileActivity extends FirebaseAuthAwareActivity implements IPickResult {
     private static final String TAG = ProfileActivity.class.getName();
+    public static final String EXTRA_DISABLE_SIGNOUT = "disable_signout";
+    public static final String EXTRA_USER_PROFILE_ID = "user_profile_id";
+    public static final String EXTRA_READ_ONLY = "read_only";
 
     private ActivityProfileBinding mActivityProfileBinding;
     private ProfileViewModel mProfileViewModel;
     private Uri mAvatarUri;
+    private String mUserProfileId;
+    private boolean mDisableSignout;
+    private boolean mReadOnly;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,11 +62,13 @@ public class ProfileActivity extends AppCompatActivity implements IPickResult {
 
         mActivityProfileBinding = DataBindingUtil.setContentView(this, R.layout.activity_profile);
 
+        onNewIntent(getIntent());
+
         ButterKnife.bind(this, mActivityProfileBinding.getRoot());
 
         mProfileViewModel = ViewModelProviders.of(this).get(ProfileViewModel.class);
 
-        mProfileViewModel.getProfileData().observe(this, this::updateUI);
+        mProfileViewModel.getProfileData(mUserProfileId).observe(this, this::updateUI);
 
         mActivityProfileBinding.setIsEditing(false);
 
@@ -78,8 +81,29 @@ public class ProfileActivity extends AppCompatActivity implements IPickResult {
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        mUserProfileId = intent.getStringExtra(EXTRA_USER_PROFILE_ID);
+        mDisableSignout = intent.getBooleanExtra(EXTRA_DISABLE_SIGNOUT, false);
+        mReadOnly = intent.getBooleanExtra(EXTRA_READ_ONLY, false);
+        mActivityProfileBinding.setReadOnly(mReadOnly);
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.profile_activity_menu, menu);
+        if (mDisableSignout) {
+            MenuItem signoutItem = menu.findItem(R.id.action_signout);
+            signoutItem.setEnabled(false);
+            signoutItem.setVisible(false);
+        }
+
+        if (!mCurrentUser.getUid().equals(mUserProfileId)) {
+            MenuItem settingsItem = menu.findItem(R.id.action_settings);
+            settingsItem.setEnabled(false);
+            settingsItem.setVisible(false);
+        }
+
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -88,13 +112,35 @@ public class ProfileActivity extends AppCompatActivity implements IPickResult {
         switch (item.getItemId()) {
             // Respond to the action bar's Up/Home button
             case android.R.id.home:
-                NavUtils.navigateUpFromSameTask(this);
+                Intent upIntent = NavUtils.getParentActivityIntent(this);
+                if (NavUtils.shouldUpRecreateTask(this, upIntent)) {
+                    // This activity is NOT part of this app's task, so create a new task
+                    // when navigating up, with a synthesized back stack.
+                    TaskStackBuilder.create(this)
+                            // Add all of this activity's parents to the back stack
+                            .addNextIntentWithParentStack(upIntent)
+                            // Navigate up to the closest parent
+                            .startActivities();
+                } else {
+                    // This activity is part of this app's task, so simply
+                    // navigate up to the logical parent activity.
+                    NavUtils.navigateUpFromSameTask(this);
+                }
                 return true;
             case R.id.action_signout:
+                FirebaseUtil.setConnected(false);
+                FirebaseAuth.getInstance().signOut();
                 Log.d(TAG, "Signout called!");
                 return false;
+            case R.id.action_settings:
+                startActivitySetting();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void startActivitySetting() {
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
     }
 
     @OnClick(R.id.uploadAvatar)
@@ -269,26 +315,5 @@ public class ProfileActivity extends AppCompatActivity implements IPickResult {
                 ext = parts[parts.length - 1];
         }
         return ext;
-    }
-
-    @BindingAdapter({"bind:imageUrl", "bind:fallbackDrawable", "bind:gravatar"})
-    public static void loadImageUrl(ImageView view, String imageUrl, Drawable fallbackDrawable, String email) {
-        Log.i(TAG, "app:imageUrl: " + imageUrl);
-        String url = imageUrl;
-
-        if (url == null) {
-            int size = (int) view.getResources().getDimension(R.dimen.profile_avatar_view);
-            url = GravatarUtil.getGravatar(email, size);
-            Log.i(TAG, "Gravatar: " + url + " Email: " + email);
-        }
-
-        GlideApp.with(view)
-                .load(url)
-                .centerCrop()
-                .circleCrop()
-                .transition(DrawableTransitionOptions.withCrossFade())
-                .placeholder(fallbackDrawable)
-                .fallback(fallbackDrawable)
-                .into(view);
     }
 }

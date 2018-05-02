@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.preference.PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.espacepiins.messenger.ui.component.PrefContactSync
+        android:enabled="false"
+        android:key="last_contact_imported"
+        android:title="Contacts Sync"
+        android:summary="Dernière synchronisation %s"/>
+</android.support.v7.preference.PreferenceScreen>

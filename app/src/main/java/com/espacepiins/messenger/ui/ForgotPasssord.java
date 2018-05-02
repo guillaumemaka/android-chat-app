@@ -3,7 +3,7 @@ package com.espacepiins.messenger.ui;
 import android.app.Activity;
 import android.os.Bundle;
 
-import com.espacepiins.messsenger.R;
+import com.espacepiins.messenger.R;
 
 
 /**
