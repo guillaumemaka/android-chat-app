@@ -16,16 +16,17 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 
+import com.espacepiins.messenger.R;
 import com.espacepiins.messenger.application.FirebaseRefs;
 import com.espacepiins.messenger.model.Profile;
 import com.espacepiins.messenger.ui.callback.OnAuthFragmentReplaceListener;
-import com.espacepiins.messsenger.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -181,6 +182,7 @@ public class RegisterFragment extends Fragment implements View.OnClickListener {
                             createProfile(user).addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
+                                    registerFCMToken(user);
                                     mRegistrationListener.onRegisterSuccess(user);
                                 }
                             });
@@ -219,5 +221,15 @@ public class RegisterFragment extends Fragment implements View.OnClickListener {
                         .fromFireBaseUser(user)
                         .getProfile()
                         .toMap());
+    }
+
+    private void registerFCMToken(FirebaseUser user) {
+        FirebaseDatabase
+                .getInstance()
+                .getReference(FirebaseRefs
+                        .USER_NOTIFICATION_TOKEN_REF(
+                                user.getUid(),
+                                FirebaseInstanceId.getInstance().getToken()
+                        )).setValue(true);
     }
 }
