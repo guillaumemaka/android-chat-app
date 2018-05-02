@@ -5,19 +5,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0dd2cb"
-    tools:context="com.espacepiins.messenger.ui.SplashActivity">
+    android:layout_gravity="center"
+    android:background="@color/colorPrimaryDark"
+    tools:context="com.espacepiins.messenger.ui.SplashActivity"
+    >
 
     <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="219dp"
-        android:layout_height="208dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:id="@+id/myView"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
         android:src="@drawable/ic_piins_logo"
-        android:tint="#fff"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

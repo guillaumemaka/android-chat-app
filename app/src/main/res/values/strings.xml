@@ -1,16 +1,67 @@
 <resources>
-    <string name="app_name">PiinsMessenger</string>
+    <string name="app_name">Piin\'s Messenger</string>
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password (optional)</string>
-    <string name="action_sign_in">Sign in or register</string>
+    <string name="prompt_password">Mot de passe</string>
+    <string name="action_sign_in">Sign in</string>
     <string name="action_sign_in_short">Sign in</string>
-    <string name="error_invalid_email">This email address is invalid</string>
-    <string name="error_invalid_password">This password is too short</string>
-    <string name="error_incorrect_password">This password is incorrect</string>
-    <string name="error_field_required">This field is required</string>
+    <string name="error_invalid_email">L\'addresse email est invalide</string>
+    <string name="error_invalid_password">Le mot de passe est trop court</string>
+    <string name="error_incorrect_password">Le mot de passe est incorrect</string>
+    <string name="error_field_required">Ce champ est requis!</string>
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="invalid_email_message">L\'adresse email saisie n\'est pas valide!</string>
+    <string name="email_require_message">Le champ adresse email est requis</string>
+    <string name="pseudo_require_message">Le champ pseudo est requis</string>
+    <string name="pseudo_too_short_message">Le champ pseudo est trop court</string>
+    <string name="password_require_message">Le champ mot de passe est requis</string>
+    <string name="password_too_short_message">Le champ mot de passe est trop court</string>
+    <string name="confirm_password_prompt">Confirm password</string>
+    <string name="sign_up">SIGN UP</string>
+    <string name="password_no_match_message">Lee mots de passe ne correspondent pas</string>
+    <string name="term_of_user_ck">Conditions d\'utilisation</string>
+    <string name="room_activity_title">Conversations</string>
+    <string name="tablayout_tab_recent_title">Récent</string>
+    <string name="tablayout_tab_discover_title">Découvrir</string>
+    <string name="action_search">Chercher une conversation</string>
+    <string name="search_hint">Chercher un contact</string>
+    <string name="preference_key">com.espacepiins.messenger.global_preferences</string>
+    <string name="read_contacts_permission_rational_message_hint">Nous devons accéder à vos contacts, pour vous permettre d\'utiliser pleinement l\'application.</string>
+    <string name="action_search_contact">Chercher un contact</string>
+    <string name="email_already_taken">Cette adresse email existe déjà.</string>
+    <string name="tos_error_message">Veuillez accepter les conditions d\'utilisation.</string>
+    <string name="registration_failed_message">La création du compte à echouée.</string>
+    <string name="login_failed_message">L\'authentification à échouée.</string>
+    <string name="external_storage_permission_rationale">Pour mettre à jour votre j\'ai besoin d\'avoir accès à votre carte SD de votre téléphone!</string>
+    <string name="activity_profile_title">Profile</string>
+
+
+    <string name="string_snackbar_import_action">IMPORT</string>
+    <string name="snackbar_contact_import_messasge">Communiquer avec des amis c\'est mieux, voulez-vous importer des contacts de votre carnet d\'adresse, je me chargerai de vous indiquez avec qui vous pouvez communiquer</string>
+    <string name="snackbar_contact_import_done_message">Importation de vos contact terminée.</string>
+    <string name="string_no_data">Aucune conversation! \n Pourquoi ne pas commencer maintenant!</string>
+    <string name="email_type_label_home">Domicile</string>
+    <string name="email_type_label_mobile">Cellulaire</string>
+    <string name="email_type_label_work">Travail</string>
+    <string name="type_label_other">Autre</string>
+    <string name="app_link">https://piinsmessenger.com</string>
+    <string name="app_alpha_playstore_url"></string>
+    <string name="dynamic_link_domain"></string>
+    <string name="internal_test_dynamic_link">https://x6ebw.app.goo.gl/wtQ4</string>
+    <string name="default_notification_channel_id">com.espacepiins.messenger.ANDROID</string>
+    <string name="default_notification_channel_name">ANDROID MESSAGES CHANNEL</string>
+    <string name="channel_description">Channel recevant les nouveaux message entrants</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <string name="menu_action_settings">Settings</string>
+    <string name="status_text">Actif il y\'a %1$s</string>
+    <string name="setting_activity_title">Préférences</string>
+    <string name="pref_btn_sync">Sync</string>
+    <string name="pref_sync_summary">Dernière synchronisation %1$s</string>
+    <string name="pref_sync_summary_alt">Pas encore synchronisé</string>
 </resources>

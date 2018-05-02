@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="room"
+            type="com.espacepiins.messenger.model.Room"/>
+    </data>
+
+    <LinearLayout
+        android:id="@+id/room_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/recycler_view_backgound"
+
+        >
+
+        <ImageView
+            android:id="@+id/room_row_avatar"
+            android:layout_width="@dimen/avatar_size_small"
+            android:layout_height="@dimen/avatar_size_small"
+            android:layout_marginBottom="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_weight="0"
+            android:foreground="@drawable/avatar_overlay_small"
+            android:maxHeight="32dp"
+            android:maxWidth="32dp"
+            android:minHeight="32dp"
+            android:minWidth="32dp"
+            app:fromRoom="@{room}"
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/room_row_displayName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                app:textStyle='@{room.read ? "italic" : "bold|italic"}'
+                android:text="@{room.toDisplayName}"/>
+
+            <TextView
+                android:id="@+id/room_row_lastMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:fontFamily="sans-serif-thin"
+                android:text="@{room.lastMessage}"
+                android:textColor="#ababab"
+                app:textStyle='@{room.read ? "italic" : "bold|italic"}'/>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/lastMessageTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_marginEnd="20dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_weight="2"
+            app:timestamp="@{room.lastMessageTimestamp ?? room.createdAt}"
+            app:textStyle='@{room.read ? "italic" : "bold|italic"}'
+            android:textAlignment="center"/>
+
+    </LinearLayout>
+</layout>

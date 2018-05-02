@@ -2,45 +2,141 @@ apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
 
 android {
-    compileSdkVersion 26
+    buildToolsVersion '27.0.3'
+    compileSdkVersion 27
     defaultConfig {
         applicationId "com.espacepiins.messenger"
         minSdkVersion 21
         targetSdkVersion 26
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.0.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         generatedDensities = []
-
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation":
+                                     "$projectDir/schemas".toString()]
+            }
+        }
     }
+
+    dataBinding {
+        enabled = true
+    }
+
+
 
     aaptOptions {
         additionalParameters "--no-version-vectors"
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     buildTypes {
-        release {
+        debug {
+            debuggable true
             minifyEnabled false
+            buildConfigField 'boolean', 'ENABLE_CRASHLYTICS', 'false'
+        }
+
+        release {
+            debuggable false
+            minifyEnabled false
+            buildConfigField 'boolean', 'ENABLE_CRASHLYTICS', 'true'
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+
+    project.ext {
+        supportVersion = "27.1.1"
+        fireBaseVersion = "12.0.1"
+        roomVersion = "1.0.0"
+        componentArchVersion = "1.1.0"
+        butterKnifeVersion = "8.8.1"
+        stethoVersion = "1.5.0"
+        uCropVersion = "2.2.1"
+        glideVersion = "4.6.1"
+        constraintLayoutSupportVersion = "1.1.0"
+        junitVersion = "4.12"
+        testRunnerVersion = "1.0.1"
+        espressoVersion = "3.0.1"
+        crashlyticsVersion = "2.9.0@aar"
+        jobdispatcherVersion = "0.8.5"
+        geofireVersion = "2.3.1"
     }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:appcompat-v7:26.1.0'
-    implementation 'com.android.support:design:26.1.0'
-    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
-    compile 'com.google.firebase:firebase-core:11.8.0'
-    compile 'com.google.firebase:firebase-auth:11.8.0'
-    compile 'com.google.firebase:firebase-database:11.8.0'
-    compile('com.crashlytics.sdk.android:crashlytics:2.9.0@aar') {
+
+    // Support Libraries
+    implementation "com.android.support:support-v4:$supportVersion"
+    implementation "com.android.support:cardview-v7:$supportVersion"
+    implementation "com.android.support:design:$supportVersion"
+    implementation "com.android.support:appcompat-v7:$supportVersion"
+    implementation "com.android.support:recyclerview-v7:$supportVersion"
+    implementation "com.android.support.constraint:constraint-layout:$constraintLayoutSupportVersion"
+    implementation "com.android.support:support-compat:$supportVersion"
+    implementation "com.android.support:preference-v7:$supportVersion"
+
+    implementation 'com.android.support:support-v4:27.1.1'
+    testImplementation "junit:junit:$junitVersion"
+
+    // Test
+    androidTestImplementation "com.android.support.test:runner:$testRunnerVersion"
+    androidTestImplementation "com.android.support.test.espresso:espresso-core:$espressoVersion"
+
+    // Firebase SDK
+    implementation "com.google.firebase:firebase-core:$fireBaseVersion"
+    implementation "com.google.firebase:firebase-auth:$fireBaseVersion"
+    implementation "com.google.firebase:firebase-database:$fireBaseVersion"
+    implementation "com.google.firebase:firebase-storage:$fireBaseVersion"
+    implementation "com.google.firebase:firebase-invites:$fireBaseVersion"
+    implementation "com.google.firebase:firebase-messaging:$fireBaseVersion"
+    implementation "com.firebase:firebase-jobdispatcher:$jobdispatcherVersion"
+    implementation("com.crashlytics.sdk.android:crashlytics:$crashlyticsVersion") {
         transitive = true
     }
+
+    // GeoFire
+    implementation "com.firebase:geofire-android:$geofireVersion"
+
+    // Google Play Service
+    implementation "com.google.android.gms:play-services-maps:$fireBaseVersion"
+    implementation "com.google.android.gms:play-services-location:$fireBaseVersion"
+
+    // Glide v4
+    implementation "com.github.bumptech.glide:glide:$glideVersion"
+    annotationProcessor "com.github.bumptech.glide:compiler:$glideVersion"
+
+    // Room (use 1.1.0-alpha3 for latest alpha)
+    implementation "android.arch.persistence.room:runtime:$roomVersion"
+    annotationProcessor "android.arch.persistence.room:compiler:$roomVersion"
+
+    implementation "android.arch.lifecycle:extensions:$componentArchVersion"
+    // alternatively, just ViewModel
+    implementation "android.arch.lifecycle:viewmodel:$componentArchVersion"
+    // alternatively, just LiveData
+    implementation "android.arch.lifecycle:livedata:$componentArchVersion"
+    // Java8 support for Lifecycles
+    implementation "android.arch.lifecycle:common-java8:$componentArchVersion"
+
+    // Stetho
+    implementation "com.facebook.stetho:stetho:$stethoVersion"
+
+    // ButterKnife
+    implementation "com.jakewharton:butterknife:$butterKnifeVersion"
+    annotationProcessor "com.jakewharton:butterknife-compiler:$butterKnifeVersion"
+
+    // uCrop by Yalantis
+    implementation "com.github.yalantis:ucrop:$uCropVersion"
+
+    // PickImage
+    implementation 'com.github.jrvansuita:PickImage:+'
 }
 
 apply plugin: 'com.google.gms.google-services'

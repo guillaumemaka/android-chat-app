@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+
+    <data>
+
+        <import type="android.view.View"/>
+
+        <import type="android.view.Gravity"/>
+
+        <variable
+            name="isMe"
+            type="Boolean"/>
+
+        <variable
+            name="message"
+            type="com.espacepiins.messenger.model.Message"/>
+
+        <variable
+            name="profile"
+            type="com.espacepiins.messenger.model.Profile"/>
+    </data>
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/date"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            app:timestamp="@{message.timestamp}"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="@{safeUnbox(isMe) ? Gravity.END : Gravity.START}"
+            android:layout_marginBottom="3dp"
+            android:layout_marginTop="3dp"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/contact_avatar"
+                android:layout_width="33dp"
+                android:layout_height="33dp"
+                android:layout_gravity="start|bottom"
+                android:layout_marginEnd="10dp"
+                android:layout_marginStart="16dp"
+                android:foreground="@drawable/avatar_overlay_extra_small"
+                android:visibility="@{safeUnbox(isMe) ? View.GONE : View.VISIBLE}"
+                app:fallbackDrawable="@{@drawable/ic_face}"
+                app:gravatar="@{profile.emailAddress}"
+                app:imageUrl="@{profile.avatarUrl}"/>
+
+            <TextView
+                android:id="@+id/message_content"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="5dp"
+                android:background="@{safeUnbox(isMe) ? @drawable/message_bubble_send : @drawable/message_bubble_receive}"
+                android:padding="3dp"
+                android:text="@{message.content}"
+                android:textAppearance="?attr/textAppearanceListItem"
+                android:textColor="@{safeUnbox(isMe) ? @color/colorSecondary : @color/bubbleReceiveTextColor}"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</layout>
+
