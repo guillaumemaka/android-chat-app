@@ -36,7 +36,7 @@ public class UserFetcherJob extends JobService {
         Job job = dispatcher.newJobBuilder()
                 .setService(UserFetcherJob.class)
                 .setTag(JOB_TAG)
-                .setTrigger(Trigger.executionWindow(0, 120))
+                .setTrigger(Trigger.executionWindow(0, 30))
                 .setRecurring(true)
                 .setLifetime(Lifetime.FOREVER)
                 .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)

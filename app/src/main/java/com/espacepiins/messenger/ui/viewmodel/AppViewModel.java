@@ -1,5 +1,6 @@
 package com.espacepiins.messenger.ui.viewmodel;
 
+
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.MutableLiveData;
@@ -22,7 +23,7 @@ public class AppViewModel extends AndroidViewModel {
         mContactLoaded = new MutableLiveData<>();
         mContactLoaded.setValue(false);
 
-        if (application.getApplicationContext().getSharedPreferences(application.getApplicationContext().getString(R.string.preference_key), Context.MODE_PRIVATE)
+        if (application.getSharedPreferences(application.getString(R.string.preference_key), Context.MODE_PRIVATE)
                 .getLong(Constants.LAST_CONTACT_IMPORTED, 0) != 0) {
             mContactLoaded.setValue(true);
         }

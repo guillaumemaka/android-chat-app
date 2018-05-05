@@ -36,13 +36,16 @@ public class ContactSearchResultDiffCallback extends DiffUtil.Callback {
 
     @Override
     public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-
-        if (mOldSearchResult.get(oldItemPosition).getDisplayName().compareTo(mNewSearchResult.get(newItemPosition).getDisplayName()) == 0)
-            if (mOldSearchResult.get(oldItemPosition).getLookupKey().compareTo(mNewSearchResult.get(newItemPosition).getLookupKey()) == 0)
-                if(mOldSearchResult.get(oldItemPosition).getFirebaseUID() != null && mNewSearchResult.get(newItemPosition).getFirebaseUID() != null)
-                    if (mOldSearchResult.get(oldItemPosition).getFirebaseUID().equals(mNewSearchResult.get(newItemPosition).getFirebaseUID()))
-                        if (mOldSearchResult.get(oldItemPosition).getPhotoThumbnailUri().equals(mNewSearchResult.get(newItemPosition).getPhotoThumbnailUri()))
-                            return true;
+        try {
+            if (mOldSearchResult.get(oldItemPosition).getDisplayName().compareTo(mNewSearchResult.get(newItemPosition).getDisplayName()) == 0)
+                if (mOldSearchResult.get(oldItemPosition).getLookupKey().compareTo(mNewSearchResult.get(newItemPosition).getLookupKey()) == 0)
+                    if (mOldSearchResult.get(oldItemPosition).getFirebaseUID() != null && mNewSearchResult.get(newItemPosition).getFirebaseUID() != null)
+                        if (mOldSearchResult.get(oldItemPosition).getFirebaseUID().equals(mNewSearchResult.get(newItemPosition).getFirebaseUID()))
+                            if (mOldSearchResult.get(oldItemPosition).getPhotoThumbnailUri().equals(mNewSearchResult.get(newItemPosition).getPhotoThumbnailUri()))
+                                return true;
+        } catch (NullPointerException e) {
+            return false;
+        }
         return false;
     }
 }
